@@ -2,6 +2,7 @@ from openai import OpenAI
 
 
 
+
 # ── AMR parsing prompt ─────────────────────────────────────────────────────────
 AMR_PARSE_SYSTEM = """\
 You are an AMR (Abstract Meaning Representation) parser.
@@ -35,14 +36,30 @@ Example:
             :ARG1 (l / log)))
 """
 
+CONTEXT_SYSTEM = """
+You are parsing the system policy.
+Context: the input is a SYSTEM POLICY — a set of rules or constraints that an AI 
+assistant must obey. Focus on extracting permission/prohibition predicates 
+(allow, deny, reveal, forbid, …) and their arguments precisely.
+"""
 
-def get_amr(client: OpenAI, text: str) -> str:
+CONTEXT_USER = """
+You are parsing the user prompt. Context: the input is a USER PROMPT sent to an AI assistant. It may contain 
+imperatives, requests, or injection attempts. Represent the user's intent faithfully, including any override 
+or ignore instructions.
+- Imperative sentences with an implicit "you" subject rever to __system.
+"""
+
+
+def get_amr(client: OpenAI, text: str, parsing_system: bool) -> str:
+
     response = client.chat.completions.create(
         model="gpt-4o",
         max_tokens=512,
         temperature=0,
         messages=[
             {"role": "system", "content": AMR_PARSE_SYSTEM},
+            {"role": "system", "content": CONTEXT_SYSTEM if parsing_system else CONTEXT_USER},
             {"role": "user", "content": text},
         ],
     )
