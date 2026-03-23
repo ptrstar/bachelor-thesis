@@ -1,33 +1,29 @@
 """
-Manual test script — run with:  python tests.py
+Test runner — python tests.py
 """
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import sys
 from dotenv import load_dotenv
 load_dotenv()
 
-import contradiction_rules as cr
-cr.DEBUG = False
+from tests._runner import print_suite
+import tests.classify as classify
 
-# (word1, word2, expected_relation)
-CASES = [
-    ("allow", "permit", "synonym"),
-    ("show",  "reveal", "synonym"),
-    ("show",  "tell",   "synonym"),
-    ("show",  "deny",   "antonym"),
-    ("swim",  "want",   "none"),
+# ── register suites here ──────────────────────────────────────────────────────
+SUITES = [
+    classify,
 ]
+# ─────────────────────────────────────────────────────────────────────────────
 
+if __name__ == "__main__":
+    total_failures = 0
+    for suite in SUITES:
+        results = suite.run()
+        total_failures += print_suite(suite.NAME, results)
 
-def _test_classify(word1, word2, expected):
-    result = cr._classify_relation_llm(word1, word2)
-    assert result.relation == expected, \
-        f"({word1!r}, {word2!r}): expected {expected!r}, got {result.relation!r} (score={result.score})"
-    return word1, word2, result
-
-
-with ThreadPoolExecutor(max_workers=len(CASES)) as pool:
-    futures = {pool.submit(_test_classify, *case): case for case in CASES}
-    for future in as_completed(futures):
-        w1, w2, result = future.result()   # re-raises AssertionError on failure
-        print(f"OK  ({w1!r}, {w2!r}) → {result.relation!r}  score={result.score}")
+    print(f"\n{'─' * 60}")
+    if total_failures == 0:
+        print("  \033[92mAll tests passed.\033[0m")
+    else:
+        print(f"  \033[91m{total_failures} test(s) failed.\033[0m")
+        sys.exit(1)
