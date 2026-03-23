@@ -7,11 +7,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from tests._runner import print_suite
-import tests.classify as classify
+import tests.helpers     as helpers
+import tests.classify    as classify
+import tests.llm_helpers as llm_helpers
 
 # ── register suites here ──────────────────────────────────────────────────────
 SUITES = [
+    helpers,
     classify,
+    llm_helpers,
 ]
 # ─────────────────────────────────────────────────────────────────────────────
 
