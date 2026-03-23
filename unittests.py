@@ -10,12 +10,14 @@ from tests._runner import print_suite
 import tests.helpers     as helpers
 import tests.classify    as classify
 import tests.llm_helpers as llm_helpers
+import tests.parser      as parser
 
 # ── register suites here ──────────────────────────────────────────────────────
 SUITES = [
     helpers,
     classify,
     llm_helpers,
+    parser,
 ]
 # ─────────────────────────────────────────────────────────────────────────────
 

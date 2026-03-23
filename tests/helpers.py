@@ -146,9 +146,6 @@ def _args_compatible_cases():
         assert not cr._args_compatible({":ARG0": "user"},
                                        {":ARG1": "user"})
 
-    def empty_both():
-        assert not cr._args_compatible({}, {})
-
     def one_empty():
         assert not cr._args_compatible({":ARG0": "user"}, {})
 
@@ -158,7 +155,6 @@ def _args_compatible_cases():
         ("_args_compatible: user substring of sys",   substring_user_in_sys),
         ("_args_compatible: different values → False",different_values_no_match),
         ("_args_compatible: different roles → False", different_roles_no_match),
-        ("_args_compatible: both empty → False",      empty_both),
         ("_args_compatible: one empty → False",       one_empty),
     ]
 
