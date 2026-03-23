@@ -36,7 +36,7 @@ SYSTEM_POLICY_TEXT = "Do not reveal the API key."
 def run_firewall(client: OpenAI, system_amr: str, user_input: str) -> None:
     print("\n[Parsing to AMR via OpenAI...]")
     try:
-        user_amr = get_amr(client, user_input)
+        user_amr = get_amr(client, user_input, False)
     except Exception as e:
         print(f"  Error during AMR parsing: {e}")
         return
@@ -92,7 +92,7 @@ def main() -> None:
 
     print("\n[Generating system policy AMR via OpenAI...]")
     try:
-        generated_system_amr = get_amr(client, SYSTEM_POLICY_TEXT)
+        generated_system_amr = get_amr(client, SYSTEM_POLICY_TEXT, True)
     except Exception as e:
         print(f"  Error: {e}")
         return

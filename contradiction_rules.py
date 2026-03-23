@@ -86,6 +86,24 @@ def _are_synonyms_llm(word1, word2):
     return r.relation == 'synonym' and r.score >= SCORE_THRESHOLD
 
 
+# ── Argument compatibility ─────────────────────────────────────────────────────
+
+def _args_compatible(sys_args, user_args):
+    """
+    Return True when both dicts cover the same ARG roles and every value pair
+    is compatible under substring matching — i.e. one value is a substring of
+    the other (or they are equal).  This gives more hits than exact equality
+    when AMR concepts differ only in specificity (e.g. 'user' vs 'user_account').
+    """
+    if set(sys_args) != set(user_args):
+        return False
+    for role in sys_args:
+        v1, v2 = sys_args[role], user_args[role]
+        if v1 != v2 and v1 not in v2 and v2 not in v1:
+            return False
+    return True
+
+
 # ── Shared iteration helper ────────────────────────────────────────────────────
 
 def _cross_concept_pairs(system_nodes, user_nodes):
@@ -104,7 +122,7 @@ def _cross_concept_pairs(system_nodes, user_nodes):
             user_args_val = _args(user_node)
             if not sys_args_val or not user_args_val:
                 continue
-            if sys_args_val != user_args_val:
+            if not _args_compatible(sys_args_val, user_args_val):
                 continue
             w1 = _base_concept(sys_node.concept)
             w2 = _base_concept(user_node.concept)
@@ -136,7 +154,7 @@ def detect_polarity_mismatches(system_amr, user_amr):
         for sys_node in by_concept.get(user_node.concept, []):
             sys_pol  = _polarity(sys_node)
             user_pol = _polarity(user_node)
-            if sys_pol != user_pol and _args(sys_node) == _args(user_node):
+            if sys_pol != user_pol and _args_compatible(_args(sys_node), _args(user_node)):
                 mismatches.append({
                     'predicate':       user_node.concept,
                     'system_polarity': sys_pol,
@@ -243,7 +261,7 @@ def detect_semantic_similarity(system_amr, user_amr, synonym_fn=None):
         for sys_node in system_nodes.values():
             sys_args_val  = _args(sys_node)
             user_args_val = _args(user_node)
-            if sys_args_val != user_args_val:
+            if not _args_compatible(sys_args_val, user_args_val):
                 continue
             sys_pol  = _polarity(sys_node)
             user_pol = _polarity(user_node)
