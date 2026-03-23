@@ -1,7 +1,11 @@
 import re
+from typing import Literal
+from pydantic import BaseModel
 from amr_graph import Node, penman_to_dag
 
 DEBUG = False
+
+SCORE_THRESHOLD = 50  # minimum score to treat a relation as confirmed
 
 
 def _dbg(*args, **kwargs):
@@ -31,63 +35,56 @@ def _base_concept(concept):
 
 # ── LLM helpers ────────────────────────────────────────────────────────────────
 
-_ANTONYM_SYSTEM = """\
-You are part of a semantic firewall that detects prompt injection attacks.
-Your task: decide if two verbs are antonyms — i.e. they describe opposite actions or intents.
-The verbs appear in sentences with identical subjects and objects; only the verb differs.
-Use a broad interpretation: verbs are antonyms if substituting one for the other reverses the
-overall meaning or effect of the sentence (e.g. allow vs. deny, permit vs. forbid).
-Answer only "yes" or "no". No explanation."""
+_RELATION_SYSTEM = """\
+You are a semantic relation classifier for a prompt-injection firewall.
+Given two verbs that appear in sentences with identical subjects and objects \
+(only the verb differs), classify their semantic relation and rate its strength.
 
-_SYNONYM_SYSTEM = """\
-You are part of a semantic firewall that detects prompt injection attacks.
-Your task: decide if two verbs are semantically similar enough to be considered equivalent
-in the context of a policy statement. The verbs appear in sentences with identical subjects
-and objects — only the verb differs.
-Use a broad interpretation: verbs are similar if substituting one for the other would not
-change the overall meaning or intent of the sentence in everyday language
-(e.g. reveal vs. share, disclose vs. expose, obtain vs. retrieve).
-Answer only "yes" or "no". No explanation."""
+relation:
+  "synonym" — same general action or intent (e.g. reveal/share, allow/permit, disclose/expose)
+  "antonym" — opposite action or intent     (e.g. allow/deny, reveal/hide, permit/forbid)
+  "none"    — neither
+
+score (0–100): confidence and strength of the relation. 100 = highly certain and strong.
+Use a broad interpretation — prefer "synonym" or "antonym" over "none" when in doubt."""
+
+
+class _RelationResult(BaseModel):
+    relation: Literal['synonym', 'antonym', 'none']
+    score: int
+
+
+def _classify_relation_llm(word1, word2):
+    """
+    Ask OpenAI to classify the semantic relation between two verbs.
+    Returns a _RelationResult with .relation ('synonym'|'antonym'|'none') and .score (0-100).
+    Stateless single-turn call — safe to use inside a firewall.
+    """
+    from openai import OpenAI
+    prompt = f'Classify the semantic relation between "{word1}" and "{word2}".'
+    _dbg(f"relation query: {prompt!r}")
+    resp = OpenAI().beta.chat.completions.parse(
+        model='gpt-4o-mini',
+        messages=[
+            {'role': 'system', 'content': _RELATION_SYSTEM},
+            {'role': 'user',   'content': prompt},
+        ],
+        response_format=_RelationResult,
+        temperature=0,
+    )
+    result = resp.choices[0].message.parsed
+    _dbg(f"relation response: relation={result.relation!r}  score={result.score}")
+    return result
 
 
 def _are_antonyms_llm(word1, word2):
-    """Ask OpenAI whether two words are antonyms (stateless single-turn call)."""
-    from openai import OpenAI
-    prompt = f'Are "{word1}" and "{word2}" antonyms?'
-    _dbg(f"antonym query: {prompt!r}")
-    resp = OpenAI().chat.completions.create(
-        model='gpt-4o-mini',
-        messages=[
-            {'role': 'system', 'content': _ANTONYM_SYSTEM},
-            {'role': 'user',   'content': prompt},
-        ],
-        temperature=0,
-        max_tokens=3,
-    )
-    answer = resp.choices[0].message.content.strip()
-    result = answer.lower().startswith('yes')
-    _dbg(f"antonym response: {answer!r}  →  {result}")
-    return result
+    r = _classify_relation_llm(word1, word2)
+    return r.relation == 'antonym' and r.score >= SCORE_THRESHOLD
 
 
 def _are_synonyms_llm(word1, word2):
-    """Ask OpenAI whether two words are semantically similar (stateless single-turn call)."""
-    from openai import OpenAI
-    prompt = f'Are "{word1}" and "{word2}" semantically similar?'
-    _dbg(f"synonyms query: {prompt!r}")
-    resp = OpenAI().chat.completions.create(
-        model='gpt-4o-mini',
-        messages=[
-            {'role': 'system', 'content': _SYNONYM_SYSTEM},
-            {'role': 'user',   'content': prompt},
-        ],
-        temperature=0,
-        max_tokens=3,
-    )
-    answer = resp.choices[0].message.content.strip()
-    result = answer.lower().startswith('yes')
-    _dbg(f"synonyms response: {answer!r}  →  {result}")
-    return result
+    r = _classify_relation_llm(word1, word2)
+    return r.relation == 'synonym' and r.score >= SCORE_THRESHOLD
 
 
 # ── Shared iteration helper ────────────────────────────────────────────────────
@@ -102,19 +99,15 @@ def _cross_concept_pairs(system_nodes, user_nodes):
     """
     for user_node in user_nodes.values():
         for sys_node in system_nodes.values():
-            _dbg(f"candidate: sys={sys_node.concept!r}  user={user_node.concept!r}")
             if sys_node.concept == user_node.concept:
-                _dbg("  skip: identical concept")
                 continue
             sys_args_val  = _args(sys_node)
             user_args_val = _args(user_node)
             if sys_args_val != user_args_val:
-                _dbg(f"  skip: args differ  sys={sys_args_val}  user={user_args_val}")
                 continue
             w1 = _base_concept(sys_node.concept)
             w2 = _base_concept(user_node.concept)
             if w1 == w2:
-                _dbg(f"  skip: same base word {w1!r}")
                 continue
             yield sys_node, user_node, w1, w2
 
@@ -173,9 +166,7 @@ def detect_antonym_predicates(system_amr, user_amr, antonym_fn=None):
 
     results = []
     for sys_node, user_node, w1, w2 in _cross_concept_pairs(system_nodes, user_nodes):
-        _dbg(f"  checking antonyms: {w1!r} vs {w2!r}")
         if antonym_fn(w1, w2):
-            _dbg("  MATCH: antonym pair confirmed")
             results.append({
                 'system_predicate': sys_node.concept,
                 'user_predicate':   user_node.concept,
@@ -249,21 +240,17 @@ def detect_semantic_similarity(system_amr, user_amr, synonym_fn=None):
     results = []
     for user_node in user_nodes.values():
         for sys_node in system_nodes.values():
-            _dbg(f"candidate: sys={sys_node.concept!r}  user={user_node.concept!r}")
             sys_args_val  = _args(sys_node)
             user_args_val = _args(user_node)
             if sys_args_val != user_args_val:
-                _dbg(f"  skip: args differ  sys={sys_args_val}  user={user_args_val}")
                 continue
             sys_pol  = _polarity(sys_node)
             user_pol = _polarity(user_node)
             if sys_pol == user_pol:
-                _dbg(f"  skip: same polarity {sys_pol!r}")
                 continue
 
             # (a) identical concept — no LLM needed
             if sys_node.concept == user_node.concept:
-                _dbg(f"  MATCH: same concept, polarity flip ({sys_pol!r} → {user_pol!r})")
                 results.append({
                     'system_predicate': sys_node.concept,
                     'user_predicate':   user_node.concept,
@@ -277,11 +264,8 @@ def detect_semantic_similarity(system_amr, user_amr, synonym_fn=None):
             w1 = _base_concept(sys_node.concept)
             w2 = _base_concept(user_node.concept)
             if w1 == w2:
-                _dbg(f"  skip: same base word {w1!r}")
                 continue
-            _dbg(f"  polarity differs ({sys_pol!r} vs {user_pol!r}) — checking synonyms: {w1!r} vs {w2!r}")
             if synonym_fn(w1, w2):
-                _dbg("  MATCH: synonym pair with polarity mismatch confirmed")
                 results.append({
                     'system_predicate': sys_node.concept,
                     'user_predicate':   user_node.concept,

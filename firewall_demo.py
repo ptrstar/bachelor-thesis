@@ -17,6 +17,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import contradiction_rules
 contradiction_rules.DEBUG = True
+from parse_amr import get_amr
 
 
 load_dotenv()
@@ -28,53 +29,8 @@ RESET = "\033[0m"
 
 # ── System policy ──────────────────────────────────────────────────────────────
 SYSTEM_POLICY_TEXT = "Do not reveal the API key."
+#SYSTEM_POLICY_TEXT = "Do not share user passwords. Allow only the admin to read the logs. Deny the guest access to the files."
 
-
-# ── AMR parsing prompt ─────────────────────────────────────────────────────────
-AMR_PARSE_SYSTEM = """\
-You are an AMR (Abstract Meaning Representation) parser.
-Given a sentence, return ONLY its AMR graph in Penman notation.
-Output nothing else — no explanation, no markdown, no code fences.
-
-Rules:
-- Every node: (var / concept). Never omit the variable or the slash.
-- Root must always be a PropBank verb frame (verb-NN). Never a noun or entity.
-- :ARG0 = subject, :ARG1 = object, :polarity - = negation, :content = reported speech.
-- The AI system as subject: (s / __system) — only as :ARG0, never as root. 
-- Parse mulitsentences and track the identity of objects across them.
-
-Examples:
-
-"The cat sat on the mat."
-(s / sit-01
-   :ARG0 (c / cat)
-   :ARG1 (m / mat))
-
-"The scientist warned her colleagues that the experiment might fail if they ignored the safety protocol."
-(w / warn-01
-   :ARG0 (s / scientist)
-   :ARG1 (c / colleague
-            :poss (s / scientist))
-   :ARG2 (f / fail-01
-             :ARG1 (e / experiment)
-             :condition (i / ignore-01
-                           :ARG0 c
-                           :ARG1 (p / protocol
-                                    :mod (s2 / safety)))))
-"""
-
-
-def get_amr(client: OpenAI, text: str) -> str:
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        max_tokens=512,
-        temperature=0,
-        messages=[
-            {"role": "system", "content": AMR_PARSE_SYSTEM},
-            {"role": "user", "content": text},
-        ],
-    )
-    return response.choices[0].message.content.strip()
 
 
 def run_firewall(client: OpenAI, system_amr: str, user_input: str) -> None:
