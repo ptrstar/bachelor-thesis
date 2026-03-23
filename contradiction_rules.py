@@ -62,7 +62,6 @@ def _classify_relation_llm(word1, word2):
     """
     from openai import OpenAI
     prompt = f'Classify the semantic relation between "{word1}" and "{word2}".'
-    _dbg(f"relation query: {prompt!r}")
     resp = OpenAI().beta.chat.completions.parse(
         model='gpt-4o-mini',
         messages=[
@@ -73,7 +72,7 @@ def _classify_relation_llm(word1, word2):
         temperature=0,
     )
     result = resp.choices[0].message.parsed
-    _dbg(f"relation response: relation={result.relation!r}  score={result.score}")
+    _dbg(f"relation response on {word1} vs {word2}: relation={result.relation!r}  score={result.score}")
     return result
 
 
@@ -103,6 +102,8 @@ def _cross_concept_pairs(system_nodes, user_nodes):
                 continue
             sys_args_val  = _args(sys_node)
             user_args_val = _args(user_node)
+            if not sys_args_val or not user_args_val:
+                continue
             if sys_args_val != user_args_val:
                 continue
             w1 = _base_concept(sys_node.concept)
