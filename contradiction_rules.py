@@ -76,15 +76,6 @@ def _classify_relation_llm(word1, word2):
     return result
 
 
-def _are_antonyms_llm(word1, word2):
-    r = _classify_relation_llm(word1, word2)
-    return r.relation == 'antonym' and r.score >= SCORE_THRESHOLD
-
-
-def _are_synonyms_llm(word1, word2):
-    r = _classify_relation_llm(word1, word2)
-    return r.relation == 'synonym' and r.score >= SCORE_THRESHOLD
-
 
 # ── Argument compatibility ─────────────────────────────────────────────────────
 
@@ -161,30 +152,45 @@ def detect_polarity_mismatches(system_amr, user_amr):
     return mismatches
 
 
-def detect_antonym_predicates(system_amr, user_amr, antonym_fn=None):
+def detect_predicate_contradiction(system_amr, user_amr, relation_fn=None):
     """
-    Rule (2): Different predicates that are antonyms, same arguments.
+    Rule (2+4): Different predicates with compatible args where the semantic
+    relation between them — combined with polarity — signals a contradiction.
 
-    Detects cases like system says allow-01(user, file) and user says
-    deny-01(user, file) — same semantic participants, opposite action.
+      synonym  + opposite polarity  →  same action negated            → contradiction
+      antonym  + same    polarity   →  opposite actions, same sign
+                                       (e.g. not-reveal vs not-hide)  → contradiction
 
-    antonym_fn: callable(word1, word2) -> bool. Defaults to an OpenAI LLM
-    call. Pass a custom function in tests to avoid API calls.
+    Both cases reduce to: the net semantic intent of the two predicates differs.
 
-    Returns a list of dicts: {system_predicate, user_predicate, args}
+    relation_fn: callable(w1, w2) -> _RelationResult.
+    Defaults to _classify_relation_llm. Pass a stub in tests to avoid API calls.
+
+    Returns a list of dicts:
+        {system_predicate, user_predicate, relation, system_polarity, user_polarity, args}
     """
-    if antonym_fn is None:
-        antonym_fn = _are_antonyms_llm
+    if relation_fn is None:
+        relation_fn = _classify_relation_llm
 
     system_nodes = penman_to_dag(system_amr)
     user_nodes   = penman_to_dag(user_amr)
 
     results = []
     for sys_node, user_node, w1, w2 in _cross_concept_pairs(system_nodes, user_nodes):
-        if antonym_fn(w1, w2):
+        r = relation_fn(w1, w2)
+        if r.score < SCORE_THRESHOLD or r.relation == 'none':
+            continue
+        sys_pol        = _polarity(sys_node)
+        user_pol       = _polarity(user_node)
+        polarity_match = (sys_pol == user_pol)
+        if (r.relation == 'synonym' and not polarity_match) or \
+           (r.relation == 'antonym' and     polarity_match):
             results.append({
                 'system_predicate': sys_node.concept,
                 'user_predicate':   user_node.concept,
+                'relation':         r.relation,
+                'system_polarity':  sys_pol,
+                'user_polarity':    user_pol,
                 'args':             _args(sys_node),
             })
 
@@ -229,35 +235,3 @@ def detect_argument_mismatches(system_amr, user_amr):
     return results
 
 
-def detect_semantic_similarity(system_amr, user_amr, synonym_fn=None):
-    """
-    Rule (4): Synonym predicates with opposite polarity, compatible arguments.
-
-    synonym_fn: callable(word1, word2) -> bool. Defaults to _are_synonyms_llm.
-    Pass a custom function in tests to avoid API calls.
-
-    Returns a list of dicts:
-        {system_predicate, user_predicate, system_polarity, user_polarity, args}
-    """
-    if synonym_fn is None:
-        synonym_fn = _are_synonyms_llm
-
-    system_nodes = penman_to_dag(system_amr)
-    user_nodes   = penman_to_dag(user_amr)
-
-    results = []
-    for sys_node, user_node, w1, w2 in _cross_concept_pairs(system_nodes, user_nodes):
-        sys_pol  = _polarity(sys_node)
-        user_pol = _polarity(user_node)
-        if sys_pol == user_pol:
-            continue
-        if synonym_fn(w1, w2):
-            results.append({
-                'system_predicate': sys_node.concept,
-                'user_predicate':   user_node.concept,
-                'system_polarity':  sys_pol,
-                'user_polarity':    user_pol,
-                'args':             _args(sys_node),
-            })
-
-    return results

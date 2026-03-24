@@ -45,10 +45,17 @@ def run_firewall(client: OpenAI, system_amr: str, user_input: str) -> None:
     if result.blocked:
         print(RED + "*** INJECTION DETECTED — Request blocked. ***" + RESET)
         for m in result.matches:
-            print(f"  [Rule 4 — Synonym predicate, polarity flip]")
-            print(f"    System    : {m['system_predicate']} (polarity {m['system_polarity']})")
-            print(f"    User      : {m['user_predicate']} (polarity {m['user_polarity']})")
-            print(f"    Args      : {m['args']}")
+            if 'predicate' in m:   # Rule 1 — polarity mismatch
+                print(f"  [Rule 1 — Polarity mismatch]")
+                print(f"    Predicate : {m['predicate']}")
+                print(f"    System    : polarity {m['system_polarity']}")
+                print(f"    User      : polarity {m['user_polarity']}")
+                print(f"    Args      : {m['args']}")
+            else:                  # Rule 2+4 — predicate contradiction
+                print(f"  [Rule 2+4 — Predicate contradiction ({m['relation']})]")
+                print(f"    System    : {m['system_predicate']} (polarity {m['system_polarity']})")
+                print(f"    User      : {m['user_predicate']} (polarity {m['user_polarity']})")
+                print(f"    Args      : {m['args']}")
     else:
         print(GREEN + "  No contradiction detected — prompt appears benign." + RESET)
     print()

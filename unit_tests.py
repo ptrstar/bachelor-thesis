@@ -16,10 +16,10 @@ import tests.firewall    as firewall
 
 # ── register suites here ──────────────────────────────────────────────────────
 SUITES = [
-    #helpers,
-    #classify,
-    #llm_helpers,
-    #parser,
+    helpers,
+    classify,
+    llm_helpers,
+    parser,
     firewall,
 ]
 # ─────────────────────────────────────────────────────────────────────────────
