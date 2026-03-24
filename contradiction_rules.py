@@ -90,15 +90,17 @@ def _are_synonyms_llm(word1, word2):
 
 def _args_compatible(sys_args, user_args):
     """
-    Return True when both dicts cover the same ARG roles and every value pair
-    is compatible under substring matching — i.e. one value is a substring of
-    the other (or they are equal).  This gives more hits than exact equality
-    when AMR concepts differ only in specificity (e.g. 'user' vs 'user_account').
+    True when one role set is a subset of the other, and every shared role
+    has value-compatible fillers (one value is a substring of the other).
+    Empty dicts are never compatible.
     """
-    if set(sys_args) != set(user_args):
+    if not sys_args or not user_args:
         return False
-    for role in sys_args:
-        v1, v2 = sys_args[role], user_args[role]
+    smaller, larger = (sys_args, user_args) if len(sys_args) <= len(user_args) else (user_args, sys_args)
+    if not set(smaller) <= set(larger):
+        return False
+    for role in smaller:
+        v1, v2 = smaller[role], larger[role]
         if v1 != v2 and v1 not in v2 and v2 not in v1:
             return False
     return True
@@ -108,21 +110,15 @@ def _args_compatible(sys_args, user_args):
 
 def _cross_concept_pairs(system_nodes, user_nodes):
     """
-    Yield (sys_node, user_node, w1, w2) for every system/user node pair that has:
-      - identical ARG arguments
-      - different concepts (and different base words)
-
-    These are the only pairs worth asking the LLM about.
+    Yield (sys_node, user_node, w1, w2) for every system/user node pair where:
+      - concepts differ (and base words differ)
+      - args are compatible (subset relation + substring value match)
     """
     for user_node in user_nodes.values():
         for sys_node in system_nodes.values():
             if sys_node.concept == user_node.concept:
                 continue
-            sys_args_val  = _args(sys_node)
-            user_args_val = _args(user_node)
-            if not sys_args_val or not user_args_val:
-                continue
-            if not _args_compatible(sys_args_val, user_args_val):
+            if not _args_compatible(_args(sys_node), _args(user_node)):
                 continue
             w1 = _base_concept(sys_node.concept)
             w2 = _base_concept(user_node.concept)
@@ -235,17 +231,10 @@ def detect_argument_mismatches(system_amr, user_amr):
 
 def detect_semantic_similarity(system_amr, user_amr, synonym_fn=None):
     """
-    Rule (4): Semantically equivalent predicates with opposite polarity, same arguments.
+    Rule (4): Synonym predicates with opposite polarity, compatible arguments.
 
-    Covers two sub-cases:
-      (a) Identical concept, polarity flip — e.g. system: reveal-01(polarity-)
-          user: reveal-01(polarity+). Same word, polarity flipped → contradiction.
-          No LLM call needed; identity is the strongest form of semantic similarity.
-      (b) Synonym concepts, polarity flip — e.g. system: allow-01(user, file)
-          user: permit-01(user, file) with polarity-. LLM confirms synonymy.
-
-    synonym_fn: callable(word1, word2) -> bool. Defaults to an OpenAI LLM
-    call. Pass a custom function in tests to avoid API calls.
+    synonym_fn: callable(word1, word2) -> bool. Defaults to _are_synonyms_llm.
+    Pass a custom function in tests to avoid API calls.
 
     Returns a list of dicts:
         {system_predicate, user_predicate, system_polarity, user_polarity, args}
@@ -257,40 +246,18 @@ def detect_semantic_similarity(system_amr, user_amr, synonym_fn=None):
     user_nodes   = penman_to_dag(user_amr)
 
     results = []
-    for user_node in user_nodes.values():
-        for sys_node in system_nodes.values():
-            sys_args_val  = _args(sys_node)
-            user_args_val = _args(user_node)
-            if not _args_compatible(sys_args_val, user_args_val):
-                continue
-            sys_pol  = _polarity(sys_node)
-            user_pol = _polarity(user_node)
-            if sys_pol == user_pol:
-                continue
-
-            # (a) identical concept — no LLM needed
-            if sys_node.concept == user_node.concept:
-                results.append({
-                    'system_predicate': sys_node.concept,
-                    'user_predicate':   user_node.concept,
-                    'system_polarity':  sys_pol,
-                    'user_polarity':    user_pol,
-                    'args':             sys_args_val,
-                })
-                continue
-
-            # (b) different concept — check for synonymy via LLM
-            w1 = _base_concept(sys_node.concept)
-            w2 = _base_concept(user_node.concept)
-            if w1 == w2:
-                continue
-            if synonym_fn(w1, w2):
-                results.append({
-                    'system_predicate': sys_node.concept,
-                    'user_predicate':   user_node.concept,
-                    'system_polarity':  sys_pol,
-                    'user_polarity':    user_pol,
-                    'args':             sys_args_val,
-                })
+    for sys_node, user_node, w1, w2 in _cross_concept_pairs(system_nodes, user_nodes):
+        sys_pol  = _polarity(sys_node)
+        user_pol = _polarity(user_node)
+        if sys_pol == user_pol:
+            continue
+        if synonym_fn(w1, w2):
+            results.append({
+                'system_predicate': sys_node.concept,
+                'user_predicate':   user_node.concept,
+                'system_polarity':  sys_pol,
+                'user_polarity':    user_pol,
+                'args':             _args(sys_node),
+            })
 
     return results
