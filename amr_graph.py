@@ -23,19 +23,28 @@ class Edge:
 
 
 def penman_to_dag(amr_string):
-    g = penman.decode(amr_string)
+    """
+    Parse one or more AMR graphs from amr_string into a shared node map.
+
+    Multi-sentence AMR reuses variables across graphs (e.g. bare 's' in the
+    second graph refers to '__system' declared in the first).  Processing all
+    graphs sequentially with a shared nodes_map resolves those cross-references.
+    """
     nodes_map = {}
 
-    for source, relation, target in g.triples:
-        if relation == ':instance':
-            nodes_map[source] = Node(source, target)
+    for g in penman.iterdecode(amr_string):
+        # Pass 1 — register every node declared in this graph.
+        for source, relation, target in g.triples:
+            if relation == ':instance':
+                nodes_map[source] = Node(source, target)
 
-    for source, relation, target in g.triples:
-        if relation != ':instance':
-            source_node = nodes_map.get(source)
-            if source_node:
-                target_obj = nodes_map.get(target, target)
-                source_node.edges.append(Edge(source_node, relation, target_obj))
+        # Pass 2 — add edges; cross-graph variable refs are already in nodes_map.
+        for source, relation, target in g.triples:
+            if relation != ':instance':
+                source_node = nodes_map.get(source)
+                if source_node:
+                    target_obj = nodes_map.get(target, target)
+                    source_node.edges.append(Edge(source_node, relation, target_obj))
 
     return nodes_map
 

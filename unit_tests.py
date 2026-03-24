@@ -1,5 +1,6 @@
 """
-Test runner — python tests.py
+Test runner — python unit_
+tests.py
 """
 
 import sys
@@ -11,6 +12,7 @@ import tests.helpers     as helpers
 import tests.classify    as classify
 import tests.llm_helpers as llm_helpers
 import tests.parser      as parser
+import tests.firewall    as firewall
 
 # ── register suites here ──────────────────────────────────────────────────────
 SUITES = [
@@ -18,6 +20,7 @@ SUITES = [
     classify,
     llm_helpers,
     parser,
+    firewall,
 ]
 # ─────────────────────────────────────────────────────────────────────────────
 
