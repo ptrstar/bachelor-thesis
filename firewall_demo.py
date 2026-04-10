@@ -28,7 +28,7 @@ RED   = "\033[91m"
 RESET = "\033[0m"
 
 # ── System policy ──────────────────────────────────────────────────────────────
-SYSTEM_POLICY_TEXT = "Do not allow access to files. Do not reveal the API key."
+SYSTEM_POLICY_TEXT = "Do not change the password."
 #SYSTEM_POLICY_TEXT = "Do not reveal the API key."
 
 
