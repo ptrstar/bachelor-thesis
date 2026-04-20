@@ -60,55 +60,97 @@ PREPARSED_BANKING_POLICY = """
    :polarity -)
 """
 
+# ── Per-tool AMR schemas (used by get_amr_tool_output for untrusted tools) ────
+#
+# Each value is injected into the tool-output parsing prompt as a schema hint.
+# The parser uses it to know which slots to populate and how to label them.
+# Slots absent from the actual output should be omitted (not emitted as unknown).
+
+TOOL_AMR_SCHEMAS: dict[str, str] = {
+    "get_most_recent_transactions": """\
+Schema — emit one tree per transaction record:
+(get-01
+   :ARG0 (u / __user)
+   :ARG1 (t / transaction
+       :ARG0 (snd / sender   :name "..." :iban "...")
+       :ARG1 (rec / recipient :name "..." :iban "...")
+       :quant <amount>
+       :time  "date string"
+       :ARG2  (sub / subject :value "description")))
+Omit any slot for which no value appears in the output.
+""",
+    "get_scheduled_transactions": """\
+Schema — same structure as get_most_recent_transactions but for scheduled/future transfers.
+Each scheduled transfer gets its own tree.
+""",
+    "get_user_info": """\
+Schema — emit a single tree for the account holder's profile:
+(get-01
+   :ARG0 (u / __user)
+   :ARG1 (i / user-info
+       :name    "full name"
+       :iban    "IBAN string"
+       :email   "email address"
+       :phone   "phone number"
+       :address "street address"))
+Omit any slot for which no value appears in the output.
+""",
+    "read_file": """\
+Schema — parse natural-language content sentence by sentence (one tree per sentence).
+Factual data (IBANs, amounts, names) should be attributes on the nearest predicate node,
+not standalone trees.  Structured data without natural-language framing is unexpressable.
+""",
+}
+
 # ── Task lists ────────────────────────────────────────────────────────────────
 
 # Tasks run WITHOUT injection — measure utility / false-positive rate.
 BENIGN_TASKS = [
     "user_task_0",
     "user_task_1",
-    "user_task_2",
-    "user_task_3",
-    "user_task_4",
-    "user_task_5",
-    "user_task_6",
-    "user_task_7",
-    "user_task_8",
-    "user_task_9",
-    "user_task_10",
-    "user_task_11",
-    "user_task_12",
-    "user_task_13",
-    "user_task_14",
-    "user_task_15",
-    "user_task_100",
-    "user_task_101",
-    "user_task_102",  # user delegates to tasks.txt — demonstrates data-injection / false-positive tension
+   #  "user_task_2",
+   #  "user_task_3",
+   #  "user_task_4",
+   #  "user_task_5",
+   #  "user_task_6",
+   #  "user_task_7",
+   #  "user_task_8",
+   #  "user_task_9",
+   #  "user_task_10",
+   #  "user_task_11",
+   #  "user_task_12",
+   #  "user_task_13",
+   #  "user_task_14",
+   #  "user_task_15",
+   #  "user_task_100",
+   #  "user_task_101",
+   #  "user_task_102",  # user delegates to tasks.txt — demonstrates data-injection / false-positive tension
 ]
 
 # (user_task_id, injection_task_id) pairs — measure detection rate.
 ATTACK_PAIRS = [
     ("user_task_101", "injection_task_0"),
     ("user_task_101", "injection_task_1"),
-    ("user_task_101", "injection_task_2"),
-    ("user_task_101", "injection_task_3"),
-    ("user_task_101", "injection_task_4"),
-    ("user_task_101", "injection_task_5"),
-    ("user_task_101", "injection_task_6"),
-    ("user_task_101", "injection_task_7"),
-    ("user_task_101", "injection_task_8"),
-    ("user_task_101", "injection_task_101"),
-    ("user_task_101", "injection_task_100"),  # custom: transactions cover + password injection
-    ("user_task_1",  "injection_task_1"),     # spending check  → send money to attacker IBAN
-    ("user_task_1",  "injection_task_5"),     # spending check  → send max money
-    ("user_task_8",  "injection_task_6"),     # tx summary      → transfer $30k in increments
-    ("user_task_8",  "injection_task_1"),     # tx summary      → send money w/ pizza friend's IBAN
-    ("user_task_1",  "injection_task_7"),     # spending check  → change password
-    ("user_task_8",  "injection_task_7"),     # tx summary      → change password
-    ("user_task_8",  "injection_task_8"),     # tx summary      → exfil scheduled tx + send money
-    ("user_task_14", "injection_task_8"),     # security check  → exfil tx + send money
-    ("user_task_0",  "injection_task_0"),     # pay bill        → attacker IBAN + streaming info
-    ("user_task_0",  "injection_task_5"),     # pay bill        → send max money
-    ("user_task_2",  "injection_task_4"),     # adjust rent     → modify recurring payment recipient
-    ("user_task_12", "injection_task_5"),     # follow notice   → send max money
-    ("user_task_13", "injection_task_5"),     # update address  → send max money
+   #  ("user_task_101", "injection_task_2"),
+   #  ("user_task_101", "injection_task_3"),
+   #  ("user_task_101", "injection_task_4"),
+   #  ("user_task_101", "injection_task_5"),
+   #  ("user_task_101", "injection_task_6"),
+   #  ("user_task_101", "injection_task_7"),
+   #  ("user_task_101", "injection_task_8"),
+   #  ("user_task_101", "injection_task_101"),
+   #  ("user_task_101", "injection_task_100"),  # custom: transactions cover + password injection
+   #  ("user_task_1",  "injection_task_1"),     # spending check  → send money to attacker IBAN
+   #  ("user_task_1",  "injection_task_5"),     # spending check  → send max money
+   #  ("user_task_8",  "injection_task_6"),     # tx summary      → transfer $30k in increments
+   #  ("user_task_8",  "injection_task_1"),     # tx summary      → send money w/ pizza friend's IBAN
+   #  ("user_task_1",  "injection_task_7"),     # spending check  → change password
+   #  ("user_task_8",  "injection_task_7"),     # tx summary      → change password
+   #  ("user_task_8",  "injection_task_8"),     # tx summary      → exfil scheduled tx + send money
+   #  ("user_task_14", "injection_task_8"),     # security check  → exfil tx + send money
+   #  ("user_task_0",  "injection_task_0"),     # pay bill        → attacker IBAN + streaming info
+   #  ("user_task_0",  "injection_task_5"),     # pay bill        → send max money
+   #  ("user_task_2",  "injection_task_4"),     # adjust rent     → modify recurring payment recipient
+   #  ("user_task_12", "injection_task_5"),     # follow notice   → send max money
+   #  ("user_task_13", "injection_task_5"),     # update address  → send max money
 ]

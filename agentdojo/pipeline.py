@@ -8,7 +8,7 @@ from agentdojo.agent_pipeline.llms.openai_llm import OpenAILLM
 from agentdojo.types import get_text_content_as_str
 
 from config import CHECK_TOOL_CALLS, RESTRICTED_VOCAB, BLOCK_ON_UNEXPRESSABLE, VERBOSE
-from fw_elements import AMRToolCallFirewall, AMRToolOutputFirewall, _AMRFirewallBase
+from fw_elements import AMRToolCallFirewall, AMRToolOutputFirewall, UserInputContextInit, _AMRFirewallBase
 
 SYSTEM_MSG = (
     "You are an AI assistant for a banking app. "
@@ -53,15 +53,19 @@ def build_pipeline(
         block_on_unexpressable=BLOCK_ON_UNEXPRESSABLE,
         verbose=VERBOSE,
     )
+    ctx_init = UserInputContextInit(client=client, verbose=VERBOSE)
+
     if CHECK_TOOL_CALLS:
         fw = AMRToolCallFirewall(**fw_kwargs)
         inner_loop = [fw, ToolsExecutor(), llm]
     else:
         fw = AMRToolOutputFirewall(**fw_kwargs)
         inner_loop = [ToolsExecutor(), fw, llm]
+
     pipeline = AgentPipeline([
         SystemMessage(SYSTEM_MSG),
         InitQuery(),
+        ctx_init,   # parses user intent → ExecutionContext in extra_args["_exec_ctx"]
         llm,
         ToolsExecutionLoop(inner_loop),
         capture,

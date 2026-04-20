@@ -7,8 +7,9 @@ from agentdojo.agent_pipeline.errors import AbortAgentError
 from agentdojo.functions_runtime import Env, FunctionsRuntime, FunctionCall
 from agentdojo.types import ChatMessage, get_text_content_as_str
 
-from parse_amr import get_amr, is_unexpressable
-from config import _RED, _GREEN, _YELLOW, _CYAN, _GRAY, _BOLD, _RESET
+from parse_amr import get_amr, get_amr_user_intent, get_amr_tool_output, standardize_user_input, is_unexpressable
+from execution_context import ExecutionContext
+from config import _RED, _GREEN, _YELLOW, _CYAN, _GRAY, _BOLD, _RESET, TOOL_AMR_SCHEMAS
 
 # Tools whose outputs may contain attacker-controlled free text.
 # Action/confirmation tools are excluded — their outputs are structured/trusted.
@@ -48,6 +49,8 @@ def _tool_call_to_text(fc: FunctionCall) -> str:
         return f"Read the file {args.get('file_path', '')}."
     return f"Execute {name} with arguments {dict(args)}."
 
+
+# ── Shared base ────────────────────────────────────────────────────────────────
 
 class _AMRFirewallBase(BasePipelineElement):
     """Shared init and _check_text logic for both firewall variants."""
@@ -122,10 +125,13 @@ class _AMRFirewallBase(BasePipelineElement):
             print(f"    {_GREEN}✓ PASS — no policy match{_RESET}")
 
 
+# ── Tool-call firewall (stateless, pre-execution) ──────────────────────────────
+
 class AMRToolCallFirewall(_AMRFirewallBase):
     """
     Checks tool CALLS before execution (CHECK_TOOL_CALLS=True).
     Converts each pending FunctionCall to natural language and runs the AMR check.
+    Remains stateless — does not use the execution context.
     """
     name = "amr_tool_call_firewall"
 
@@ -147,10 +153,73 @@ class AMRToolCallFirewall(_AMRFirewallBase):
         return query, runtime, env, messages, extra_args
 
 
+# ── User-input context initialiser ────────────────────────────────────────────
+
+class UserInputContextInit(BasePipelineElement):
+    """
+    Runs once, before the first LLM call.
+
+    Parses the user's message into an AMR forest using the intent-aware prompt
+    (CONTEXT_USER_INTENT).  Each distinct action becomes its own tree with
+    :auth t on the root.  Read/fetch actions carry :purpose "..." so the
+    tool-output parser later knows why the tool was called.
+
+    Stores the resulting ExecutionContext in extra_args["_exec_ctx"].
+    """
+    name = "user_input_context_init"
+
+    def __init__(self, client: openai.OpenAI, verbose: bool = False) -> None:
+        self.client = client
+        self.verbose = verbose
+
+    def query(
+        self,
+        query: str,
+        runtime: FunctionsRuntime,
+        env: Env,
+        messages: Sequence[ChatMessage] = [],
+        extra_args: dict = {},
+    ) -> tuple[str, FunctionsRuntime, Env, Sequence[ChatMessage], dict]:
+        ctx = ExecutionContext()
+
+        user_msg = next((m for m in messages if m["role"] == "user"), None)
+        if user_msg is not None:
+            raw_text = get_text_content_as_str(user_msg["content"])
+            standardized = standardize_user_input(self.client, raw_text)
+            intent_amr = get_amr_user_intent(self.client, standardized)
+            ctx.user_intent_amr = intent_amr
+
+            if not is_unexpressable(intent_amr):
+                ctx.add_tree(intent_amr)
+                # user intent trees are pre-authorised — mark them as already checked
+                # so the firewall does not re-scan them on every tool-output pass
+                ctx.mark_checked()
+
+            if self.verbose:
+                print(f"\n  {_YELLOW}{_BOLD}▶ CTX-INIT{_RESET} standardized: {standardized!r}")
+                print(f"  {_YELLOW}{_BOLD}▶ CTX-INIT{_RESET} user intent AMR:")
+                for line in intent_amr.strip().splitlines():
+                    print(f"    {_CYAN}{line}{_RESET}")
+
+        return query, runtime, env, messages, {**extra_args, "_exec_ctx": ctx}
+
+
+# ── Tool-output firewall (context-aware, post-execution) ──────────────────────
+
 class AMRToolOutputFirewall(_AMRFirewallBase):
     """
     Checks tool OUTPUTS after execution (CHECK_TOOL_CALLS=False).
-    Only inspects outputs from UNTRUSTED_TOOLS.
+
+    For each untrusted tool output:
+      1. Parse with purpose context + per-tool schema → AMR tree(s).
+         Nodes serving the stated purpose are tagged :auth t by the parser.
+      2. Insert every resulting tree into the ExecutionContext forest.
+      3. Check only the newly inserted trees against the system policy.
+         Matches where the violating node carries :auth t are suppressed
+         (the user explicitly authorised that action).
+
+    Falls back to the stateless _check_text path when no context is available
+    (e.g. CHECK_TOOL_CALLS=True pipeline that skips UserInputContextInit).
     """
     name = "amr_tool_output_firewall"
 
@@ -162,6 +231,7 @@ class AMRToolOutputFirewall(_AMRFirewallBase):
         messages: Sequence[ChatMessage] = [],
         extra_args: dict = {},
     ) -> tuple[str, FunctionsRuntime, Env, Sequence[ChatMessage], dict]:
+        ctx: ExecutionContext | None = extra_args.get("_exec_ctx")
         already_scanned = extra_args.get("_fw_scanned", 0)
         new_messages = list(messages)[already_scanned:]
 
@@ -206,7 +276,79 @@ class AMRToolOutputFirewall(_AMRFirewallBase):
                     print(f"       │ ... ({len(lines) - 25} more lines)")
                 print(f"       └{'─' * 52}{_RESET}")
 
-            self._check_text("tool_output", text, env, list(messages))
+            if ctx is None:
+                # No execution context — fall back to stateless check
+                self._check_text("tool_output", text, env, list(messages))
+                continue
+
+            # ── Context-aware path ─────────────────────────────────────────
+            purpose    = ctx.get_purpose() or f"serve user request via {tool_name}"
+            schema     = TOOL_AMR_SCHEMAS.get(tool_name, "")
+            output_amr = get_amr_tool_output(self.client, text, tool_name, purpose, schema)
+
+            if self.verbose:
+                print(f"       {_CYAN}purpose: {purpose!r}{_RESET}")
+                print(f"       {_CYAN}amr:{_RESET}")
+                for line in output_amr.strip().splitlines():
+                    print(f"       {_CYAN}{line}{_RESET}")
+
+            if is_unexpressable(output_amr):
+                if self.block_on_unexpressable:
+                    if self.verbose:
+                        print(f"       {_RED}✗ BLOCKED — unexpressable (whitelist mode){_RESET}")
+                    self.triggered = True
+                    raise AbortAgentError("Firewall: unexpressable tool output.", list(messages), env)
+                if self.verbose:
+                    print(f"       {_GREEN}✓ PASS — unexpressable, treated as benign{_RESET}")
+                continue
+
+            ctx.add_tree(output_amr)
+            self._check_new_trees(ctx, env, list(messages))
 
         extra_args = {**extra_args, "_fw_scanned": len(messages)}
         return query, runtime, env, messages, extra_args
+
+    # ── Internal helpers ───────────────────────────────────────────────────────
+
+    def _check_new_trees(self, ctx: ExecutionContext, env: Env, messages: list) -> None:
+        """
+        Run the policy rules against each tree added since the last check.
+        Violations with :auth t on the user-side node are suppressed —
+        the action was explicitly requested by the user.
+        """
+        import contradiction_rules as cr
+
+        violations = []
+        for amr_str, _ in ctx.unchecked_trees():
+            if not amr_str.strip():
+                continue
+            try:
+                r1  = cr.detect_polarity_mismatches(self.system_amr, amr_str)
+                r24 = cr.detect_predicate_contradiction(self.system_amr, amr_str)
+            except Exception as e:
+                if self.verbose:
+                    print(f"    {_GREEN}✓ PASS — rule check error ({type(e).__name__}: {e}){_RESET}")
+                continue
+            for m in r1 + r24:
+                if not m.get('authorized', False):
+                    violations.append(m)
+
+        ctx.mark_checked()
+
+        if violations:
+            if self.verbose:
+                for m in violations:
+                    if "user_predicate" in m:
+                        print(f"    {_RED}rule2+4: {m['system_predicate']} ({m['system_polarity']}) "
+                              f"vs {m['user_predicate']} ({m['user_polarity']}) — {m['relation']} "
+                              f"[auth={m.get('authorized')}] → violation{_RESET}")
+                    else:
+                        print(f"    {_RED}rule1:   {m['predicate']} "
+                              f"sys={m['system_polarity']} user={m['user_polarity']} "
+                              f"[auth={m.get('authorized')}] → violation{_RESET}")
+                print(f"    {_RED}{_BOLD}✗ BLOCKED{_RESET}")
+            self.triggered = True
+            raise AbortAgentError("Firewall: policy violation detected.", messages, env)
+
+        if self.verbose:
+            print(f"    {_GREEN}✓ PASS — no unauthorized policy match{_RESET}")

@@ -20,6 +20,15 @@ def _polarity(node):
     return '+'
 
 
+def _auth(node: Node) -> bool:
+    """True when the node carries :auth t / true — i.e. the action was explicitly
+    authorised by the user in their original request."""
+    for edge in node.edges:
+        if edge.relation == ':auth' and str(edge.target).lower() in ('t', 'true', '+'):
+            return True
+    return False
+
+
 def _args(node):
     return {
         edge.relation: edge.target.concept if isinstance(edge.target, Node) else edge.target
@@ -147,6 +156,7 @@ def detect_polarity_mismatches(system_amr, user_amr):
                     'system_polarity': sys_pol,
                     'user_polarity':   user_pol,
                     'args':            _args(sys_node),
+                    'authorized':      _auth(user_node),
                 })
 
     return mismatches
@@ -192,6 +202,7 @@ def detect_predicate_contradiction(system_amr, user_amr, relation_fn=None):
                 'system_polarity':  sys_pol,
                 'user_polarity':    user_pol,
                 'args':             _args(sys_node),
+                'authorized':       _auth(user_node),
             })
 
     return results
