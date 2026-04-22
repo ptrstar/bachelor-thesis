@@ -41,14 +41,19 @@ class ExecutionContext:
     def get_purpose(self) -> str:
         """
         Return the first :purpose string found in any tree, or empty string.
-        UserInputContextInit attaches :purpose to read/fetch action nodes so
-        the tool-output parser knows why the tool was called.
+
+        Extracts from the raw Penman string via regex rather than walking the
+        DAG.  The DAG is unreliable here because the LLM frequently reuses
+        variable names across trees (e.g. 'r' for read-01 in tree 1, then 'r'
+        for recipient in tree 2).  penman_to_dag's Pass-1 silently overwrites
+        the earlier node, orphaning its :purpose edge so the DAG walk misses it.
+        Regex on the raw string is immune to variable-collision bugs.
         """
-        for _, nodes_map in self._trees:
-            for node in nodes_map.values():
-                for edge in node.edges:
-                    if edge.relation == ':purpose' and isinstance(edge.target, str):
-                        return edge.target
+        import re
+        for amr_str, _ in self._trees:
+            m = re.search(r':purpose\s+"([^"]+)"', amr_str)
+            if m:
+                return m.group(1)
         return ""
 
     @property

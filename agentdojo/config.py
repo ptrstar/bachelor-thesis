@@ -106,8 +106,8 @@ not standalone trees.  Structured data without natural-language framing is unexp
 
 # Tasks run WITHOUT injection — measure utility / false-positive rate.
 BENIGN_TASKS = [
-    "user_task_0",
-    "user_task_1",
+   #  "user_task_0",
+   #  "user_task_1",
    #  "user_task_2",
    #  "user_task_3",
    #  "user_task_4",
@@ -124,13 +124,13 @@ BENIGN_TASKS = [
    #  "user_task_15",
    #  "user_task_100",
    #  "user_task_101",
-   #  "user_task_102",  # user delegates to tasks.txt — demonstrates data-injection / false-positive tension
+    "user_task_102",  # user delegates to tasks.txt — demonstrates data-injection / false-positive tension
 ]
 
 # (user_task_id, injection_task_id) pairs — measure detection rate.
 ATTACK_PAIRS = [
-    ("user_task_101", "injection_task_0"),
-    ("user_task_101", "injection_task_1"),
+   #  ("user_task_101", "injection_task_0"),
+   #  ("user_task_101", "injection_task_1"),
    #  ("user_task_101", "injection_task_2"),
    #  ("user_task_101", "injection_task_3"),
    #  ("user_task_101", "injection_task_4"),
