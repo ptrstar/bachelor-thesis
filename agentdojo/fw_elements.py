@@ -68,7 +68,8 @@ class _AMRFirewallBase(BasePipelineElement):
         self.restricted_vocab = restricted_vocab
         self.block_on_unexpressable = block_on_unexpressable
         self.verbose = verbose
-        self.triggered = False  # set True when AbortAgentError is raised; reset per task in main()
+        self.triggered = False        # set True when AbortAgentError is raised; reset per task in main()
+        self.trigger_details: list[dict] = []  # violation match dicts from the last triggered block
 
     def _check_text(self, label: str, text: str, env: Env, messages: list) -> None:
         """Parse text to AMR and compare against system policy. Raises AbortAgentError on violation."""
@@ -119,6 +120,7 @@ class _AMRFirewallBase(BasePipelineElement):
                               f"args={m['args']} → polarity mismatch{_RESET}")
                 print(f"    {_RED}{_BOLD}✗ BLOCKED{_RESET}")
             self.triggered = True
+            self.trigger_details = matches
             raise AbortAgentError("Firewall: policy violation detected.", messages, env)
 
         if self.verbose:
@@ -348,6 +350,7 @@ class AMRToolOutputFirewall(_AMRFirewallBase):
                               f"[auth={m.get('authorized')}] → violation{_RESET}")
                 print(f"    {_RED}{_BOLD}✗ BLOCKED{_RESET}")
             self.triggered = True
+            self.trigger_details = violations
             raise AbortAgentError("Firewall: policy violation detected.", messages, env)
 
         if self.verbose:

@@ -34,6 +34,7 @@ from config import (
 from tasks import register_custom_tasks
 from pipeline import build_pipeline
 from reporting import print_summary
+from logger import RunLogger
 
 
 def main():
@@ -71,6 +72,13 @@ def main():
 
     pipeline, fw, capture = build_pipeline(client, system_amr)
     results = []
+    logger = RunLogger({
+        "restricted_vocab":        RESTRICTED_VOCAB,
+        "check_tool_calls":        CHECK_TOOL_CALLS,
+        "block_on_unexpressable":  BLOCK_ON_UNEXPRESSABLE,
+        "verbose":                 VERBOSE,
+        "use_preparsed_amr_policy": USE_PREPARSED_AMR_POLICY,
+    })
 
     # ── Benign tasks ──────────────────────────────────────────────────────────
     print("=" * W)
@@ -80,6 +88,7 @@ def main():
         user_task = suite.get_user_task_by_id(task_id)
         print(f"\n[{task_id}] {user_task.PROMPT}")
         fw.triggered = False
+        fw.trigger_details = []
         try:
             utility, _ = suite.run_task_with_pipeline(
                 agent_pipeline=pipeline,
@@ -101,7 +110,19 @@ def main():
         if answer:
             print(f"  {_GRAY}LLM: {answer[:200]}{_RESET}")
         print(f"  fw_blocked={fw_blocked}  utility={utility}  → {outcome}")
-        results.append({"kind": "benign", "task": task_id, "utility": utility, "fw_blocked": fw_blocked})
+        r = {
+            "kind": "benign",
+            "user_task": task_id,
+            "injection_task": None,
+            "task": task_id,
+            "utility": utility,
+            "fw_blocked": fw_blocked,
+            "injection_succeeded": None,
+            "outcome": "false_positive" if fw_blocked else ("ok" if utility else "llm_fail"),
+            "trigger_details": fw.trigger_details[:] if fw_blocked else [],
+        }
+        results.append(r)
+        logger.add_result(r)
 
     # ── Attack tasks ──────────────────────────────────────────────────────────
     print("\n" + "=" * W)
@@ -119,6 +140,7 @@ def main():
         print(f"  User task : {user_task.PROMPT}")
         print(f"  Inj goal  : {inj_task.GOAL}")
         fw.triggered = False
+        fw.trigger_details = []
         try:
             utility, injection_succeeded = suite.run_task_with_pipeline(
                 agent_pipeline=pipeline,
@@ -141,15 +163,28 @@ def main():
         if answer:
             print(f"  {_GRAY}LLM: {answer[:200]}{_RESET}")
         print(f"  fw_blocked={fw_blocked}  utility={utility}  injection_succeeded={injection_succeeded}  → {outcome}")
-        results.append({
+        r = {
             "kind": "attack",
+            "user_task": user_task_id,
+            "injection_task": inj_task_id,
             "task": f"{user_task_id}+{inj_task_id}",
             "utility": utility,
             "fw_blocked": fw_blocked,
             "injection_succeeded": injection_succeeded,
-        })
+            "outcome": (
+                "fw_detected"  if fw_blocked and not injection_succeeded else
+                "llm_resisted" if not injection_succeeded else
+                "missed"
+            ),
+            "trigger_details": fw.trigger_details[:] if fw_blocked else [],
+        }
+        results.append(r)
+        logger.add_result(r)
 
     print_summary(results)
+
+    log_path = logger.save()
+    print(f"\n{_GRAY}Run logged → {log_path}{_RESET}")
 
 
 if __name__ == "__main__":
