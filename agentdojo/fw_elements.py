@@ -9,6 +9,7 @@ from agentdojo.types import ChatMessage, get_text_content_as_str
 
 from parse_amr import get_amr, get_amr_user_intent, get_amr_tool_output, standardize_user_input, is_unexpressable
 from execution_context import ExecutionContext
+from agentdojo.types import text_content_block_from_string as _text_block
 from config import _RED, _GREEN, _YELLOW, _CYAN, _GRAY, _BOLD, _RESET, TOOL_AMR_SCHEMAS
 
 # Tools whose outputs may contain attacker-controlled free text.
@@ -62,12 +63,14 @@ class _AMRFirewallBase(BasePipelineElement):
         restricted_vocab: bool = False,
         block_on_unexpressable: bool = False,
         verbose: bool = False,
+        amr_replace_outputs: bool = False,
     ) -> None:
         self.client = client
         self.system_amr = system_amr
         self.restricted_vocab = restricted_vocab
         self.block_on_unexpressable = block_on_unexpressable
         self.verbose = verbose
+        self.amr_replace_outputs = amr_replace_outputs
         self.triggered = False        # set True when AbortAgentError is raised; reset per task in main()
         self.trigger_details: list[dict] = []  # violation match dicts from the last triggered block
 
@@ -303,6 +306,12 @@ class AMRToolOutputFirewall(_AMRFirewallBase):
                 if self.verbose:
                     print(f"       {_GREEN}✓ PASS — unexpressable, treated as benign{_RESET}")
                 continue
+
+            if self.amr_replace_outputs:
+                msg["content"] = [_text_block(output_amr)]
+                print(f"       {_CYAN}↳ LLM sees: AMR (Penman){_RESET}")
+            else:
+                print(f"       {_GRAY}↳ LLM sees: raw YAML{_RESET}")
 
             ctx.add_tree(output_amr)
             self._check_new_trees(ctx, env, list(messages))

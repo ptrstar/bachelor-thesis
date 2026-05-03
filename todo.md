@@ -26,3 +26,7 @@
 CaMeL paper, Defeating prompt injection by design
 measurability
 differential testing, raw or amr
+
+larger set of test cases, (use claude)
+track utility metrics raw amr, (implemented but needs testing, has a global boolean flag in config)
+check amr similarity tools (maybe it helps to know when graphs are similar so look into 3rd party tools again and if we could use them)
