@@ -243,6 +243,28 @@ def detect_predicate_contradiction(system_amr, user_amr, relation_fn=None):
     return results
 
 
+def _sanitize_for_smatch(tree_str: str) -> str:
+    """Strip custom attributes before handing an AMR tree to smatch's parser.
+
+    smatch uses its own line-oriented AMR parser that breaks on:
+      - :auth t   (re-entrant variable back-reference)
+      - :"..."    quoted string literals that may contain colons
+      - :x 1.0   bare numeric literals
+
+    We only need the predicate/ARG skeleton for structural matching, so removing
+    these edges is safe and does not affect the recall score.
+    """
+    s = tree_str
+    s = re.sub(r'\s*:auth\s+[^\s()]+', '', s)               # :auth t / :auth - (stop before parens)
+    s = re.sub(r'\s*:\w[\w-]*\s+"[^"]*"', '', s)            # :edge "quoted string"
+    s = re.sub(r'\s*:\w[\w-]*\s+-?\d+\.?\d*', '', s)        # :edge 1000.0
+    # smatch requires (var / concept) form; our parser sometimes emits (concept ...)
+    # without an explicit variable. Detect: opening paren followed by a concept-like
+    # token then whitespace+colon (no "/"), and inject a synthetic variable.
+    s = re.sub(r'^\(([a-z][a-z0-9-]*)(\s+:)', r'(\1-v / \1\2', s)
+    return s
+
+
 def detect_policy_violation_smatch(
     system_amr: str,
     user_amr: str,
@@ -273,7 +295,7 @@ def detect_policy_violation_smatch(
             authorized = ':auth t' in user_tree_str
             try:
                 best_match, test_triples, gold_triples = smatch.get_amr_match(
-                    user_tree_str, template
+                    _sanitize_for_smatch(user_tree_str), template
                 )
                 if gold_triples == 0:
                     continue
