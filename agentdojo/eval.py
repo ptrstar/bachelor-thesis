@@ -28,7 +28,7 @@ from parse_amr import get_amr
 from config import (
     VERBOSE, USE_PREPARSED_AMR_POLICY, BANKING_POLICY, PREPARSED_BANKING_POLICY,
     BENIGN_TASKS, ATTACK_PAIRS,
-    CHECK_TOOL_CALLS, RESTRICTED_VOCAB, BLOCK_ON_UNEXPRESSABLE,
+    CHECK_TOOL_CALLS, RESTRICTED_VOCAB, BLOCK_ON_UNEXPRESSABLE, AMR_REPLACE_OUTPUTS,
     _BLUE, _BOLD, _GRAY, _GREEN, _RED, _YELLOW, _RESET,
 )
 from tasks import register_custom_tasks
@@ -78,6 +78,7 @@ def main():
         "block_on_unexpressable":  BLOCK_ON_UNEXPRESSABLE,
         "verbose":                 VERBOSE,
         "use_preparsed_amr_policy": USE_PREPARSED_AMR_POLICY,
+        "amr_replace_outputs":     AMR_REPLACE_OUTPUTS,
     })
 
     # ── Benign tasks ──────────────────────────────────────────────────────────

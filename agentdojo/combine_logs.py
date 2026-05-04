@@ -24,7 +24,7 @@ _COLUMNS = [
     "run_id", "timestamp", "git_commit",
     # config
     "restricted_vocab", "check_tool_calls", "block_on_unexpressable",
-    "use_preparsed_amr_policy",
+    "use_preparsed_amr_policy", "amr_replace_outputs",
     # task info
     "kind", "user_task", "injection_task", "outcome",
     # raw booleans
@@ -61,7 +61,8 @@ def load_rows(filter_kind=None, filter_task=None, filter_injection=None) -> list
             "timestamp": run["timestamp"],
             "git_commit": run.get("git_commit", ""),
             **{k: run["config"].get(k, "") for k in
-               ["restricted_vocab", "check_tool_calls", "block_on_unexpressable", "use_preparsed_amr_policy"]},
+               ["restricted_vocab", "check_tool_calls", "block_on_unexpressable",
+                "use_preparsed_amr_policy", "amr_replace_outputs"]},
         }
         for r in run["results"]:
             if filter_kind and r["kind"] != filter_kind:

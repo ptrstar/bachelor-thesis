@@ -7,7 +7,10 @@ from agentdojo.agent_pipeline.tool_execution import ToolsExecutor, ToolsExecutio
 from agentdojo.agent_pipeline.llms.openai_llm import OpenAILLM
 from agentdojo.types import get_text_content_as_str
 
-from config import CHECK_TOOL_CALLS, RESTRICTED_VOCAB, BLOCK_ON_UNEXPRESSABLE, VERBOSE, AMR_REPLACE_OUTPUTS
+from config import (
+    CHECK_TOOL_CALLS, RESTRICTED_VOCAB, BLOCK_ON_UNEXPRESSABLE, VERBOSE,
+    AMR_REPLACE_OUTPUTS, ACTIVE_RULES, RULE5_THRESHOLD,
+)
 from fw_elements import AMRToolCallFirewall, AMRToolOutputFirewall, UserInputContextInit, _AMRFirewallBase
 
 SYSTEM_MSG = (
@@ -53,6 +56,8 @@ def build_pipeline(
         block_on_unexpressable=BLOCK_ON_UNEXPRESSABLE,
         verbose=VERBOSE,
         amr_replace_outputs=AMR_REPLACE_OUTPUTS,
+        active_rules=ACTIVE_RULES,
+        rule5_threshold=RULE5_THRESHOLD,
     )
     ctx_init = UserInputContextInit(client=client, verbose=VERBOSE)
 

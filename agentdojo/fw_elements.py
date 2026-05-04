@@ -12,6 +12,22 @@ from execution_context import ExecutionContext
 from agentdojo.types import text_content_block_from_string as _text_block
 from config import _RED, _GREEN, _YELLOW, _CYAN, _GRAY, _BOLD, _RESET, TOOL_AMR_SCHEMAS
 
+def _log_match(m: dict, red: str, reset: str) -> None:
+    """Print a single firewall rule match to stdout."""
+    rule = m.get('rule')
+    if rule == 'rule5':
+        print(f"    {red}rule5:   recall={m['recall']:.3f} "
+              f"[auth={m.get('authorized')}] → smatch policy match{reset}")
+    elif "user_predicate" in m:
+        print(f"    {red}rule2+4: {m['system_predicate']} ({m['system_polarity']}) "
+              f"vs {m['user_predicate']} ({m['user_polarity']}) — {m['relation']} "
+              f"[auth={m.get('authorized')}] → contradiction{reset}")
+    else:
+        print(f"    {red}rule1:   {m['predicate']} "
+              f"sys={m['system_polarity']} user={m['user_polarity']} "
+              f"[auth={m.get('authorized')}] → polarity mismatch{reset}")
+
+
 # Tools whose outputs may contain attacker-controlled free text.
 # Action/confirmation tools are excluded — their outputs are structured/trusted.
 UNTRUSTED_TOOLS = {
@@ -64,6 +80,8 @@ class _AMRFirewallBase(BasePipelineElement):
         block_on_unexpressable: bool = False,
         verbose: bool = False,
         amr_replace_outputs: bool = False,
+        active_rules: list | None = None,
+        rule5_threshold: float = 0.35,
     ) -> None:
         self.client = client
         self.system_amr = system_amr
@@ -71,6 +89,8 @@ class _AMRFirewallBase(BasePipelineElement):
         self.block_on_unexpressable = block_on_unexpressable
         self.verbose = verbose
         self.amr_replace_outputs = amr_replace_outputs
+        self.active_rules = active_rules if active_rules is not None else ["rule1", "rule24"]
+        self.rule5_threshold = rule5_threshold
         self.triggered = False        # set True when AbortAgentError is raised; reset per task in main()
         self.trigger_details: list[dict] = []  # violation match dicts from the last triggered block
 
@@ -103,24 +123,19 @@ class _AMRFirewallBase(BasePipelineElement):
                 print(f"    {_CYAN}{line}{_RESET}")
 
         try:
-            r1  = cr.detect_polarity_mismatches(self.system_amr, user_amr)
-            r24 = cr.detect_predicate_contradiction(self.system_amr, user_amr)
+            matches = cr.run_firewall_rules(
+                self.system_amr, user_amr,
+                self.active_rules, self.rule5_threshold,
+            )
         except Exception as e:
             if self.verbose:
-                print(f"    {_GREEN}✓ PASS — AMR parse error ({type(e).__name__}: {e}){_RESET}")
+                print(f"    {_GREEN}✓ PASS — rule check error ({type(e).__name__}: {e}){_RESET}")
             return
 
-        matches = r1 + r24
         if matches:
             if self.verbose:
                 for m in matches:
-                    if "user_predicate" in m:
-                        print(f"    {_RED}rule2+4: {m['system_predicate']} ({m['system_polarity']}) "
-                              f"vs {m['user_predicate']} ({m['user_polarity']}) — {m['relation']} → contradiction{_RESET}")
-                    else:
-                        print(f"    {_RED}rule1:   {m['predicate']} "
-                              f"sys={m['system_polarity']} user={m['user_polarity']} "
-                              f"args={m['args']} → polarity mismatch{_RESET}")
+                    _log_match(m, _RED, _RESET)
                 print(f"    {_RED}{_BOLD}✗ BLOCKED{_RESET}")
             self.triggered = True
             self.trigger_details = matches
@@ -334,13 +349,15 @@ class AMRToolOutputFirewall(_AMRFirewallBase):
             if not amr_str.strip():
                 continue
             try:
-                r1  = cr.detect_polarity_mismatches(self.system_amr, amr_str)
-                r24 = cr.detect_predicate_contradiction(self.system_amr, amr_str)
+                matches = cr.run_firewall_rules(
+                    self.system_amr, amr_str,
+                    self.active_rules, self.rule5_threshold,
+                )
             except Exception as e:
                 if self.verbose:
                     print(f"    {_GREEN}✓ PASS — rule check error ({type(e).__name__}: {e}){_RESET}")
                 continue
-            for m in r1 + r24:
+            for m in matches:
                 if not m.get('authorized', False):
                     violations.append(m)
 
@@ -349,14 +366,7 @@ class AMRToolOutputFirewall(_AMRFirewallBase):
         if violations:
             if self.verbose:
                 for m in violations:
-                    if "user_predicate" in m:
-                        print(f"    {_RED}rule2+4: {m['system_predicate']} ({m['system_polarity']}) "
-                              f"vs {m['user_predicate']} ({m['user_polarity']}) — {m['relation']} "
-                              f"[auth={m.get('authorized')}] → violation{_RESET}")
-                    else:
-                        print(f"    {_RED}rule1:   {m['predicate']} "
-                              f"sys={m['system_polarity']} user={m['user_polarity']} "
-                              f"[auth={m.get('authorized')}] → violation{_RESET}")
+                    _log_match(m, _RED, _RESET)
                 print(f"    {_RED}{_BOLD}✗ BLOCKED{_RESET}")
             self.triggered = True
             self.trigger_details = violations

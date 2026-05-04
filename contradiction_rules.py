@@ -127,6 +127,41 @@ def _cross_concept_pairs(system_nodes, user_nodes):
             yield sys_node, user_node, w1, w2
 
 
+# ── Rule 5 helpers ─────────────────────────────────────────────────────────────
+
+def _split_amr_trees(amr_str: str) -> list[str]:
+    """Split a multi-tree Penman string into individual top-level tree strings."""
+    trees, depth, start = [], 0, None
+    for i, ch in enumerate(amr_str):
+        if ch == '(':
+            if depth == 0:
+                start = i
+            depth += 1
+        elif ch == ')':
+            depth -= 1
+            if depth == 0 and start is not None:
+                trees.append(amr_str[start:i + 1])
+                start = None
+    return trees
+
+
+def _policy_positive_templates(policy_amr: str) -> list[str]:
+    """
+    Return a positive-action template for every prohibition tree (:polarity -)
+    in the policy AMR. Strips the polarity annotation and inlines the bare
+    cross-reference variable 's' (__system) so each template is self-contained.
+    """
+    templates = []
+    for tree_str in _split_amr_trees(policy_amr):
+        if ':polarity -' not in tree_str:
+            continue
+        t = re.sub(r'\s*:polarity\s+-', '', tree_str)
+        # Inline bare cross-ref 's' (the __system node declared in the first tree)
+        t = re.sub(r'(:ARG\w+)\s+s\b(?!\s*/)', r'\1 (s / __system)', t)
+        templates.append(t)
+    return templates
+
+
 # ── Rules ──────────────────────────────────────────────────────────────────────
 
 def detect_polarity_mismatches(system_amr, user_amr):
@@ -205,6 +240,78 @@ def detect_predicate_contradiction(system_amr, user_amr, relation_fn=None):
                 'authorized':       _auth(user_node),
             })
 
+    return results
+
+
+def detect_policy_violation_smatch(
+    system_amr: str,
+    user_amr: str,
+    threshold: float = 0.35,
+) -> list[dict]:
+    """
+    Rule 5: Smatch recall against policy prohibition templates.
+
+    For each prohibition tree in system_amr strip ':polarity -' to form a
+    positive-action template T.  For each tree in user_amr compute smatch
+    recall = best_match / gold_triples (how well user tree covers T).
+    Return a violation dict when recall >= threshold.
+
+    High recall means the output is structurally close to a prohibited action.
+    No LLM calls required. Nodes with ':auth t' are treated as authorized.
+    """
+    try:
+        import smatch
+    except ImportError:
+        return []
+
+    templates = _policy_positive_templates(system_amr)
+    user_trees = _split_amr_trees(user_amr)
+
+    violations = []
+    for template in templates:
+        for user_tree_str in user_trees:
+            authorized = ':auth t' in user_tree_str
+            try:
+                best_match, test_triples, gold_triples = smatch.get_amr_match(
+                    user_tree_str, template
+                )
+                if gold_triples == 0:
+                    continue
+                recall = best_match / gold_triples
+                _dbg(f"rule5 smatch: recall={recall:.3f} threshold={threshold}")
+                if recall >= threshold:
+                    violations.append({
+                        'rule':            'rule5',
+                        'recall':          round(recall, 3),
+                        'policy_template': template.strip(),
+                        'user_tree':       user_tree_str.strip(),
+                        'authorized':      authorized,
+                    })
+            except Exception as e:
+                _dbg(f"rule5 smatch error: {e}")
+    return violations
+
+
+def run_firewall_rules(
+    system_amr: str,
+    user_amr: str,
+    active_rules: list | None = None,
+    rule5_threshold: float = 0.35,
+) -> list[dict]:
+    """
+    Dispatcher: run the selected detection rules and return a combined match list.
+    active_rules defaults to ["rule1", "rule24"] when None.
+    Accepted values: "rule1", "rule24", "rule5".
+    """
+    if active_rules is None:
+        active_rules = ["rule1", "rule24"]
+    results: list[dict] = []
+    if "rule1" in active_rules:
+        results += detect_polarity_mismatches(system_amr, user_amr)
+    if "rule24" in active_rules:
+        results += detect_predicate_contradiction(system_amr, user_amr)
+    if "rule5" in active_rules:
+        results += detect_policy_violation_smatch(system_amr, user_amr, rule5_threshold)
     return results
 
 
