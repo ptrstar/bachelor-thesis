@@ -1,0 +1,43 @@
+\chapter{Introduction}
+\label{ch:introduction}
+
+% Research question — frame the thesis as a preliminary answer to a concrete question.
+% Opening: the threat, the gap in defenses, and why AMR is a candidate solution.
+
+\section{Prompt Injection in LLM Agents}
+\label{sec:intro-threat}
+
+% Describe the threat: LLM agents that consume external tool outputs are vulnerable
+% to injected instructions embedded in that data.  Direct and indirect injection.
+% Concrete example: banking agent reads a landlord notice containing a hidden payment command.
+
+\section{Limitations of Existing Defenses}
+\label{sec:intro-defenses}
+
+% Keyword filters: surface-level, bypass-trivial.
+% LLM judges: operate on raw text, themselves injectable, no formal guarantees.
+% Gap: no semantically-grounded, injection-safe detection with formal motivation.
+
+\section{Research Question}
+\label{sec:intro-rq}
+
+% Explicit question: Can AMR-based static analysis help detect prompt injection attacks?
+% Why AMR: lossy compression as a security feature — synonyms, paraphrases, and
+% obfuscation collapse to the same predicate-argument graph.
+% Scope: we answer this question in a narrow but meaningful context (AgentDojo
+% banking benchmark with explicit system policies).
+
+\section{Contributions}
+\label{sec:intro-contributions}
+
+% Bullet list:
+% 1. Scoped formal definition of prompt injection as AMR-graph contradiction.
+% 2. A static firewall with four detection rules and a minimal LLM cost model.
+% 3. An authorization annotation mechanism that handles the data/instruction boundary.
+% 4. Empirical evaluation on a custom AgentDojo attack suite (X attacks, Y benign tasks).
+% 5. Analysis of structural graph similarity (smatch) and why it fails as a primary rule.
+
+\section{Thesis Outline}
+\label{sec:intro-outline}
+
+% One paragraph mapping chapters to contributions.

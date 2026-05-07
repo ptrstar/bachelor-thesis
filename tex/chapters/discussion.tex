@@ -1,0 +1,71 @@
+\chapter{Discussion}
+\label{ch:discussion}
+
+\section{Capabilities of AMR-Based Detection}
+\label{sec:disc-capabilities}
+
+% AMR absorbs surface variation: synonym predicates, different wordings, embedded
+%   instructions in structured fields all unify under the same graph structure.
+% Zero false positives under Rule1+24: predicate-level agreement is a precise signal.
+% Injection-safe sub-calls: single-concept synonym/antonym queries cannot be exploited
+%   because the attacker controls only one concept node — insufficient for injection.
+% Authorization annotation cleanly separates delegated from injected actions within scope.
+
+\section{Limitations}
+\label{sec:disc-limitations}
+
+\subsection{LLM Parsing Non-Determinism}
+% The AMR graph for a given text depends on the LLM parser; output varies across calls.
+% Injections phrased far from PropBank canonical frames (euphemisms, buried sentences,
+%   unusual metaphors) may not produce a graph that triggers any rule.
+% Mitigation directions: constrained decoding, deterministic rule-based parsers for
+%   well-typed domains.
+
+\subsection{Broad-Delegation Vulnerability}
+% When the user explicitly delegates a task file, :auth t applies to all instructions
+%   within it, including injected ones.
+% This is not a logic error but a fundamental limit of user-level authorization.
+% Requires intent verification beyond the current AMR policy model.
+
+\subsection{Structural Ambiguity}
+% Concept-agnostic graph matching (Rule5 / smatch) cannot distinguish financially
+%   malicious from financially benign AMR trees.
+% Meaningful graph-based detection in typed domains requires concept-sensitive matching,
+%   which reintroduces the need for semantic knowledge already supplied by Rule1+24.
+
+\section{Abstraction Mismatch Extension}
+\label{sec:disc-abstraction}
+
+% Problem: "don't give financial advice" vs "buy Tesla stock" — normal predicate
+%   matching fails because "buy" does not appear in the policy.
+% Proposed extension: query the LLM with the full policy phrase and the top AMR
+%   concept node from the injection ("buy-01 :mode imperative").
+%   The LLM evaluates whether the concept constitutes an instance of the policy.
+%   The attacker controls only "buy-01"; a single-node query is injection-safe
+%   by the same argument as the synonym sub-calls.
+% This extends the detection class to abstract policies without sacrificing the
+%   injection-safety property of the LLM sub-calls.
+% Sketch the call interface; note this is future work.
+
+\section{Future Directions}
+\label{sec:disc-future}
+
+\subsection{Information Flow Taint Tracking}
+% CaMeL-style approach: label each value in the agent's context with a trust level
+%   (user-authorised vs. tool-output-derived).
+% Track how tainted values flow through tool calls and reasoning steps.
+% Flag when a tainted value influences a privileged action (e.g. a financial transfer).
+% This complements the AMR semantic check: taint catches injections that change
+%   \emph{parameters} of authorized actions rather than invoking forbidden predicates.
+
+\subsection{User-Defined Variable Binding}
+% Allow the user to bind named variables at task start (e.g. MY\_IBAN = "DE89...").
+% Tool outputs cannot overwrite these bindings.
+% Any instruction that references a different value for the same role is flagged.
+% This directly addresses the IBAN-swap attack class without requiring predicate matching.
+
+\subsection{Expanded Attack Taxonomy and Benchmark}
+% The current suite covers categories A–J; systematic coverage of indirect injection
+%   vectors (image alt-text, PDF metadata, calendar descriptions) is future work.
+% Differential testing: compare firewall behaviour on raw text vs. AMR-replaced
+%   message history to isolate the contribution of each component.

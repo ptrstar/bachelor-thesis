@@ -1,0 +1,39 @@
+\chapter{Problem Definition}
+\label{ch:problem}
+
+\section{Why Narrow the Scope}
+\label{sec:problem-narrow}
+
+% The general definition of prompt injection (any instruction-following behavior
+% triggered by untrusted data) is too broad to admit static guarantees.
+% We deliberately narrow: we require an explicit, machine-readable system policy.
+% This precondition is not a limitation unique to AMR — it is the precondition for
+% any static policy checker.  AgentDojo satisfies it by construction.
+% Narrowing is a feature: a well-scoped definition enables formal analysis and
+% falsifiable evaluation, whereas a broad definition produces metrics that are
+% hard to interpret.
+
+\section{Formal Definition of Prompt Injection}
+\label{sec:problem-definition}
+
+% A prompt injection is a payload P such that:
+%   (1) the AMR of P semantically contradicts the AMR of a stated policy S, AND
+%   (2) P is presented to the agent through an untrusted channel (tool output or
+%       user message not covered by an explicit user delegation).
+% "Semantically contradicts" is defined by the algorithm in Chapter~\ref{ch:system}.
+% The word "meaningful" matters: the contradiction must be purposeful (the payload
+% has a goal of overriding the policy), not incidental structural overlap.
+% This excludes noise and benign partial matches — the detection rules require
+% predicate-level agreement, not just any shared argument.
+
+\section{What This Definition Covers and Does Not Cover}
+\label{sec:problem-scope}
+
+% Covered: direct commands using synonym/antonym of a forbidden predicate,
+%          authority-spoofing injections, contextual addenda, field injections.
+% Not covered: broad-delegation attacks (user explicitly authorises an external
+%              instruction source — the firewall cannot distinguish intended from
+%              injected instructions within that source).
+% Not covered: attacks on implicit or unstated policies.
+% This is an honest scope statement, not a failure: the definition cleanly separates
+% what the firewall can and cannot guarantee.

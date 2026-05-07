@@ -1,0 +1,73 @@
+\chapter{Evaluation}
+\label{ch:evaluation}
+
+\section{Experimental Setup}
+\label{sec:eval-setup}
+
+% AgentDojo banking suite: environment description, available tools.
+% Custom task suite: N benign user tasks, M attack pairs.
+% Attack taxonomy (Table~\ref{tab:categories}): categories A–J with descriptions.
+% Three configurations:
+%   Baseline — no firewall rules (establishes LLM's inherent resistance).
+%   Rule1+24 — Rules 1, 2, 4 active with AMR_REPLACE_OUTPUTS=True.
+%   Rule5    — smatch rule active with AMR_REPLACE_OUTPUTS=True.
+% Metrics: firewall detection rate, LLM-only stop rate, combined stop rate,
+%          false-positive rate, utility.
+
+\section{Utility Baseline}
+\label{sec:eval-utility}
+
+% AMR_REPLACE_OUTPUTS effect: benign-task utility improves from X\% to Y\%.
+% Explanation: replacing raw structured JSON with AMR reduces irrelevant token noise,
+%   helping the LLM identify the relevant fields for the task.
+% Justification for activating it in all firewall runs.
+
+\section{Attack Category Taxonomy}
+\label{sec:eval-taxonomy}
+
+% Table of categories A–J: label, description, example injection, count.
+% Include both custom categories and calibration attacks from standard AgentDojo.
+
+\section{Rule1+24 Results}
+\label{sec:eval-rule124}
+
+% Aggregate table (Table~\ref{tab:aggregate}): FP rate, utility, FW detected,
+%   LLM-only, missed — across all three configurations.
+% Per-category breakdown: which categories Rule1+24 catches reliably and why.
+% Reliable detections: Cat A (direct commands), Cat D (authority spoofing),
+%   Cat H (contextual addenda), Cat J (user-info field injections),
+%   all calibration attacks.
+% Misses analysis:
+%   Cat E file injection (102+150): :auth t suppression — broad-delegation boundary.
+%   Cross-vector landlord notice (12+110, 12+141): agent follows notice instructions.
+
+\section{Rule5 / Smatch Results}
+\label{sec:eval-rule5}
+
+% Detection rate, FP rate, combined stop rate.
+% Key finding: higher combined stop rate reflects increased LLM-only resistance,
+%   not stronger firewall blocking — a weaker guarantee.
+% False-positive analysis: why smatch triggers on benign financial tasks
+%   (concept-agnostic matching; two-argument financial AMR scores ≥0.35 recall
+%   against the policy template regardless of predicate).
+% Threshold sensitivity: raising τ toward ~0.85 degenerates Rule5 to Rule1.
+% One unique detection: 12+141 (password change via landlord notice).
+
+\section{Persistent Misses}
+\label{sec:eval-misses}
+
+% 102+150 and 12+110: not stopped by any configuration.
+% Both are correctly attributed to the broad-delegation scope boundary,
+%   not to weaknesses in the detection rules.
+% These cases validate the scoped definition: the firewall cannot and does not
+%   claim to handle attacks that the user's own delegation enables.
+
+\section{Summary}
+\label{sec:eval-summary}
+
+% Rule1+24 dominates Rule5: higher FW detection, lower FP, same combined stop rate
+%   when LLM resistance is counted separately.
+% AMR-based predicate-argument matching provides high-precision detection for the
+%   defined attack class with zero false positives.
+% Structural similarity alone is insufficient: semantic knowledge (synonym/antonym
+%   classification) is necessary for cross-vocabulary coverage.

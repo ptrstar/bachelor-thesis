@@ -1,0 +1,28 @@
+Prompt injection attacks cause LLM agents to execute malicious instructions
+embedded in user inputs or tool outputs, overriding system policy.
+Existing defenses rely on keyword filters or LLM judges; both operate on
+surface text and are either trivially bypassed or themselves
+injection-vulnerable.
+
+This thesis investigates whether Abstract Meaning Representation (AMR) can
+serve as the basis for static prompt injection detection.
+AMR collapses text into canonical predicate-argument graphs, discarding
+syntactic variation and surface obfuscation while preserving semantic
+intent, making static policy checking tractable.
+
+We propose a scoped formal definition of prompt injection as a payload whose
+AMR graph semantically contradicts an explicit policy AMR graph.
+The detection mechanism combines static structural rules (polarity
+inversion, antonym and synonym predicates) with minimal LLM sub-calls
+scoped to single-concept classification queries, a sub-task too narrow for
+an attacker to exploit via injection.
+Evaluated on a custom attack suite built on the AgentDojo banking benchmark,
+the primary configuration achieves high detection rates with zero false
+positives, substantially reducing missed attacks over a no-firewall
+baseline.
+Smatch, an existing AMR graph-similarity metric explored as an alternative,
+is rejected because concept-agnostic matching cannot distinguish malicious
+instructions from legitimate transaction records.
+Remaining misses are tied to AMR parse quality: obfuscation techniques such
+as paraphrasing or indirect phrasing can prevent a detection rule from
+firing.

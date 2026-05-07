@@ -1,0 +1,104 @@
+\documentclass[11pt, a4paper]{report}
+
+% ── Encoding & language ────────────────────────────────────────────────────────
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+% ── Page layout ───────────────────────────────────────────────────────────────
+\usepackage[
+  a4paper,
+  top=25mm, bottom=25mm,
+  left=30mm, right=25mm
+]{geometry}
+
+% ── Typography ─────────────────────────────────────────────────────────────────
+\usepackage{microtype}
+\usepackage{lmodern}
+
+% ── Mathematics ───────────────────────────────────────────────────────────────
+\usepackage{amsmath, amssymb}
+
+% ── Graphics & figures ────────────────────────────────────────────────────────
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% ── Tables ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+% ── Code & AMR listings ───────────────────────────────────────────────────────
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  xleftmargin=1em,
+  xrightmargin=1em,
+  captionpos=b
+}
+
+% ── Colours ───────────────────────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+
+% ── Bibliography ──────────────────────────────────────────────────────────────
+\usepackage[backend=biber, style=numeric, sorting=none]{biblatex}
+\addbibresource{references.bib}
+
+% ── Hyperlinks (load last) ────────────────────────────────────────────────────
+\usepackage[
+  colorlinks=true,
+  linkcolor=NavyBlue,
+  citecolor=NavyBlue,
+  urlcolor=NavyBlue
+]{hyperref}
+\usepackage{cleveref}
+
+% ── Title metadata ────────────────────────────────────────────────────────────
+\title{
+  \vspace{-1cm}
+  {\large Bachelor Thesis} \\[0.5em]
+  {\LARGE\bfseries Static Prompt Injection Detection \\[0.2em]
+   via Abstract Meaning Representation} \\[1.5em]
+  {\large ETH Zürich --- Systems Security Group}
+}
+\author{
+  Janosch Moor \\[0.3em]
+  \small Supervised by Prof.\ Srdjan Čapkun \& Dr.\ James Chiang \\
+  \small moorja@student.ethz.ch
+}
+\date{2026}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+% ── Abstract ──────────────────────────────────────────────────────────────────
+\begin{abstract}
+  \input{frontmatter/abstract}
+\end{abstract}
+
+\cleardoublepage
+
+% ── Table of contents ─────────────────────────────────────────────────────────
+\tableofcontents
+\cleardoublepage
+
+% ── Chapters ──────────────────────────────────────────────────────────────────
+\input{chapters/introduction}
+\input{chapters/background}
+\input{chapters/problem}
+\input{chapters/system}
+\input{chapters/evaluation}
+\input{chapters/discussion}
+\input{chapters/conclusion}
+
+% ── Bibliography ──────────────────────────────────────────────────────────────
+\printbibliography[heading=bibintoc]
+
+\end{document}

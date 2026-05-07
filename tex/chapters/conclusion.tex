@@ -1,0 +1,21 @@
+\chapter{Conclusion}
+\label{ch:conclusion}
+
+% Restate the research question: can AMR-based static analysis help detect prompt injection?
+% Answer: yes, within a well-defined scope — explicit system policies, AgentDojo-style
+%   agent environments — and with a formally motivated detection class.
+
+% Summarize the key contributions:
+%   - Scoped formal definition of prompt injection as AMR-graph contradiction.
+%   - Static firewall (Rule1+24) with zero false positives and high detection rate.
+%   - Demonstrated that structural graph similarity (smatch) is insufficient alone.
+%   - Authorization annotation mechanism for the data/instruction boundary.
+
+% Restate the honest scope: broad-delegation attacks remain outside the defined class.
+%   This is a clean boundary, not a gap — it identifies the preconditions under which
+%   AMR-based static detection provides formal guarantees.
+
+% Close with the broader implication: AMR offers a principled, injection-safe
+%   representation layer for policy-constrained LLM agents.
+%   The abstraction mismatch extension and taint-tracking directions suggest a path
+%   toward wider coverage without sacrificing the injection-safety property.

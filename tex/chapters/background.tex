@@ -1,0 +1,41 @@
+\chapter{Background}
+\label{ch:background}
+
+\section{Abstract Meaning Representation}
+\label{sec:bg-amr}
+
+% What AMR is: rooted, directed, acyclic graph of concepts and semantic relations.
+% PropBank predicate frames (e.g. reveal-01, send-01) and their numbered ARG roles.
+% Penman notation: parenthesised tree serialisation of AMR graphs.
+% What AMR discards: word order, morphology, syntactic structure, function words.
+% What AMR keeps: predicate identity, argument roles, polarity, modality.
+% Example: "Never reveal the API key" vs "Please do not disclose the API key"
+% → both yield the same reveal-01 graph with :polarity -.
+
+\section{AMR as a Security Primitive}
+\label{sec:bg-amr-security}
+
+% Lossy compression as a feature: an attacker embedding a command in flowery prose
+% or complex phrasing still produces a graph centred on the forbidden predicate.
+% Reduction of attacker surface: the parser maps many textual variants to one graph.
+% Prior uses of semantic representations in NLP security (brief survey).
+% Contrast with embedding-based similarity: AMR gives discrete, interpretable structure
+% rather than a continuous similarity score.
+
+\section{Prompt Injection: Taxonomy and Prior Defenses}
+\label{sec:bg-injection}
+
+% Direct vs. indirect injection (tool output vs. user message).
+% OWASP definition \cite{owaspPromptInjection}; standard framing in the literature.
+% Data-vs-instruction framing: useful shorthand but hard to operationalize formally —
+% the user may legitimately load instructions from a file (broad delegation).
+% Existing defenses: keyword filters, canary tokens, LLM judges, input sanitization.
+% Why LLM judges are injection-unsafe: the judge processes the same adversarial text.
+
+\section{AgentDojo}
+\label{sec:bg-agentdojo}
+
+% AgentDojo as a benchmark: banking environment, tool suite, injection task framework.
+% Why it is a meaningful evaluation arena: explicit system policies, realistic tasks,
+% well-defined injection goals (attacker wants a specific prohibited action executed).
+% Structure: user tasks, injection tasks, utility and security metrics.
