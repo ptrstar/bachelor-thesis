@@ -2373,6 +2373,20 @@
     <bcf:datasource type="file" datatype="bibtex" glob="false">references.bib</bcf:datasource>
   </bcf:bibdata>
   <bcf:section number="0">
+    <bcf:citekey order="1" intorder="1">banarescu2013abstract</bcf:citekey>
+    <bcf:citekey order="2" intorder="1">palmer2005proposition</bcf:citekey>
+    <bcf:citekey order="3" intorder="1">banarescu2013abstract</bcf:citekey>
+    <bcf:citekey order="3" intorder="2">knight2021abstract</bcf:citekey>
+    <bcf:citekey order="4" intorder="1">matthiessen1991text</bcf:citekey>
+    <bcf:citekey order="5" intorder="1">chung2025graphcompliance</bcf:citekey>
+    <bcf:citekey order="6" intorder="1">owaspPromptInjection</bcf:citekey>
+    <bcf:citekey order="7" intorder="1">abdelnabi2025firewalls</bcf:citekey>
+    <bcf:citekey order="8" intorder="1">chung2025graphcompliance</bcf:citekey>
+    <bcf:citekey order="9" intorder="1">rogueSecurityPromptInjectionsBenchmark</bcf:citekey>
+    <bcf:citekey order="10" intorder="1">amrlib</bcf:citekey>
+    <bcf:citekey order="11" intorder="1">lewis2020bart</bcf:citekey>
+    <bcf:citekey order="12" intorder="1">cai-knight-2013-smatch</bcf:citekey>
+    <bcf:citekey order="13" intorder="1">abdelnabi2025firewalls</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">

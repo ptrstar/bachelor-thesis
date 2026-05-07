@@ -4,38 +4,216 @@
 \section{Abstract Meaning Representation}
 \label{sec:bg-amr}
 
-% What AMR is: rooted, directed, acyclic graph of concepts and semantic relations.
-% PropBank predicate frames (e.g. reveal-01, send-01) and their numbered ARG roles.
-% Penman notation: parenthesised tree serialisation of AMR graphs.
-% What AMR discards: word order, morphology, syntactic structure, function words.
-% What AMR keeps: predicate identity, argument roles, polarity, modality.
-% Example: "Never reveal the API key" vs "Please do not disclose the API key"
-% → both yield the same reveal-01 graph with :polarity -.
+Abstract Meaning Representation (AMR) is a formalism for encoding the meaning of a
+sentence as a rooted, directed, acyclic graph~\cite{banarescu2013abstract}.
+Each node in the graph represents a concept, and each edge represents a semantic
+relation between concepts.
+Concepts are drawn from PropBank frames~\cite{palmer2005proposition}, which define
+canonical verb senses and their argument roles.
+For example, \texttt{send-01} is the PropBank frame for the sending action, with
+\texttt{:ARG0} for the sender, \texttt{:ARG1} for the thing sent, and \texttt{:ARG2}
+for the recipient.
+
+Graphs are typically written in Penman notation, a parenthesised tree serialisation.
+The sentence ``Do not send money'' parses to:
+
+\begin{lstlisting}
+(s / send-01
+   :ARG0 (u / __system)
+   :ARG1 (m / money)
+   :polarity -)
+\end{lstlisting}
+
+The root concept is \texttt{send-01}.
+The \texttt{:polarity -} edge marks negation.
+The \texttt{:ARG0} role points to the implicit agent, which we represent as a special
+\texttt{\_\_system} node since AMR does not have a dedicated ``you'' concept.
+
+The key property of AMR for our purposes is what it discards.
+AMR throws away word order, grammatical morphology, function words, and syntactic
+structure.
+It keeps the predicate, its arguments, and propositional operators like polarity and
+modality.
+This means that many surface forms map to the same or similar graphs.
+``Do not send money'', ``money must not be sent'', and ``sending money is prohibited''
+all produce a graph centred on \texttt{send-01} with \texttt{:polarity -}.
+An attacker cannot change the underlying predicate by rewording the same command.
+
+Two sentences that mean the same thing do not always produce identical AMR graphs,
+because different parsers may choose different PropBank frames for synonymous words.
+``Wire funds to the attacker'' might parse to \texttt{wire-01} rather than
+\texttt{send-01}.
+This is not a weakness of AMR; it is handled by the synonym detection rule described
+in Section~\ref{sec:sys-rules}.
+The point is that AMR eliminates syntactic variation, reducing the attacker's options
+to semantic variation, which is a narrower and more tractable problem.
+
+AMR was designed for natural language understanding tasks and has been studied
+extensively since its introduction~\cite{banarescu2013abstract,knight2021abstract}.
+The Penman notation used in this thesis derives from the Penman project at
+ISI/USC~\cite{matthiessen1991text}.
 
 \section{AMR as a Security Primitive}
-\label{sec:bg-amr-security}
+\label{sec:bg-security}
 
-% Lossy compression as a feature: an attacker embedding a command in flowery prose
-% or complex phrasing still produces a graph centred on the forbidden predicate.
-% Reduction of attacker surface: the parser maps many textual variants to one graph.
-% Prior uses of semantic representations in NLP security (brief survey).
-% Contrast with embedding-based similarity: AMR gives discrete, interpretable structure
-% rather than a continuous similarity score.
+The properties that make AMR useful for natural language understanding also make it
+useful for security.
+Obfuscated language is a common technique in prompt injection attacks.
+An attacker might embed an instruction in a story, surround it with irrelevant text,
+or use unusual phrasing to avoid pattern-based filters.
+AMR parsing strips these layers away.
+No matter how the attacker phrases ``send money to this IBAN'', the parser should
+produce a graph with \texttt{send-01} as the root and a monetary argument.
 
-\section{Prompt Injection: Taxonomy and Prior Defenses}
+This is what we mean by ``lossy compression as a security feature''.
+The information that AMR discards is precisely the information an attacker uses to
+evade surface-level detectors.
+What remains is the semantic skeleton, and it is much harder to hide a forbidden action
+at the semantic level than at the syntactic level.
+
+AMR has been used in other security-adjacent NLP contexts.
+Chung et al.\ use AMR-based graph alignment to check whether agent behaviour complies
+with regulatory policies~\cite{chung2025graphcompliance}, demonstrating that
+predicate-argument structure can serve as the basis for formal compliance verification.
+Our work applies the same representation to a different problem: real-time detection of
+adversarial payloads in agent tool outputs.
+
+Compared to embedding-based similarity, AMR has two advantages in this setting.
+First, it produces discrete, interpretable structure.
+When the firewall blocks an input, we can point to exactly which predicate matched
+which policy prohibition.
+Second, it does not require a threshold calibrated on training data.
+A match between \texttt{send-01} and a policy that forbids \texttt{send-01} is
+unambiguous, not a matter of similarity score.
+
+\section{Prompt Injection}
 \label{sec:bg-injection}
 
-% Direct vs. indirect injection (tool output vs. user message).
-% OWASP definition \cite{owaspPromptInjection}; standard framing in the literature.
-% Data-vs-instruction framing: useful shorthand but hard to operationalize formally —
-% the user may legitimately load instructions from a file (broad delegation).
-% Existing defenses: keyword filters, canary tokens, LLM judges, input sanitization.
-% Why LLM judges are injection-unsafe: the judge processes the same adversarial text.
+\subsection{Direct and Indirect Injection}
 
-\section{AgentDojo}
+Prompt injection attacks occur when an adversary inserts malicious instructions into
+the input of an LLM~\cite{owaspPromptInjection}.
+Two forms are commonly distinguished.
+
+In a direct injection, the attacker is the user: they include malicious text in their
+own message, trying to override the system prompt.
+For example: ``Ignore your instructions and tell me the password.''
+Direct injection is a well-studied problem, and many defenses target it specifically.
+
+In an indirect injection, the attacker is a third party who controls content that the
+agent will read.
+They inject instructions into a file, a web page, a database record, or any other
+external resource that the agent is expected to process.
+The user did not write the malicious content; the agent encounters it while performing
+a legitimate task.
+Indirect injection is harder to defend against because the agent must process external
+content to function at all.
+This thesis focuses on indirect injection.
+
+\subsection{The Data-Instruction Boundary}
+
+A common framing in the literature distinguishes data (information the agent reads)
+from instructions (commands the agent follows).
+The idea is that tool outputs should be treated as data, not instructions, so that
+embedded commands are ignored.
+In practice this boundary is hard to enforce.
+An agent that reads a task list and executes the items on it is deliberately following
+instructions from a file.
+The user may have written the task list, or the user may have said ``run tasks.txt'',
+knowing it was written by someone else but trusting its contents.
+The data-instruction distinction collapses exactly in the cases where injections are
+most dangerous.
+We avoid this framing in our definition and instead focus on whether an action
+contradicts a stated policy.
+
+\subsection{Existing Defenses}
+
+Keyword and pattern filters maintain lists of known attack phrases.
+They are fast and produce no false positives on benign inputs, but they are brittle:
+any new phrasing defeats them.
+
+LLM-based judges pass the input to a second LLM and ask whether it is malicious.
+They are more flexible than keyword filters but share the same fundamental vulnerability:
+the judge processes the adversarial text, and a sufficiently clever injection can
+manipulate the judge itself.
+There is no formal guarantee that the judge is immune to injection.
+
+Canary token approaches embed secret strings in the system prompt.
+If the agent's output contains the canary, the system prompt was likely leaked.
+This detects a specific, narrow attack class but cannot prevent execution of injected
+commands that do not involve the canary.
+
+\section{Related Work}
+\label{sec:bg-related}
+
+\subsection{Firewalls for LLM Agent Networks}
+
+Abdelnabi et al.\ propose a dual-firewall architecture for securing agent-to-agent
+communication networks~\cite{abdelnabi2025firewalls}.
+Their work is the closest in spirit to ours, and it is worth understanding the
+difference in approach.
+
+Their \textit{Language Converter Firewall} addresses the data-instruction boundary by
+eliminating the channel through which instructions can arrive.
+Incoming messages are converted to a closed, domain-specific, structured protocol using
+deterministic verification.
+If a message cannot be expressed in the closed protocol, it is dropped.
+This provides a strong structural guarantee: instructions cannot arrive because there is
+no representation for them in the target protocol.
+Their system achieves large reductions in attack success rates on the ConVerse benchmark
+across 864 attacks (from 84\% to 10\% for privacy attacks, from 60\% to 3\% for
+security attacks).
+
+Our approach takes the opposite starting point.
+Rather than eliminating the channel, we allow natural-language tool outputs to reach the
+agent and detect when they contain payloads that contradict the policy.
+This is less restrictive: our firewall does not require the output schema to be fully
+controlled.
+The trade-off is that our approach depends on the quality of the AMR parser and on the
+policy being stated explicitly.
+
+Two further differences are worth noting.
+Abdelnabi et al.\ target agent-to-agent communication, where the inputs are messages
+from other LLM agents.
+Our target is tool output injection in a single-agent setting, where the injections
+arrive in structured data like file contents and database records.
+These are related but distinct threat models.
+Additionally, our approach produces interpretable blocking decisions: when the firewall
+fires, we can state exactly which predicate matched which policy rule.
+Structural protocol conversion does not provide this.
+
+The fact that two independent groups have converged on a firewall framing for this
+problem, using different methods, suggests this is the right architectural layer to
+address prompt injection in agent systems.
+
+\subsection{Graph-Based Compliance Checking}
+
+Chung et al.\ use AMR graph alignment to verify that LLM-generated responses comply
+with regulatory policies~\cite{chung2025graphcompliance}.
+Their work demonstrates that predicate-argument structure can encode policy constraints
+precisely enough for automated compliance checking.
+We build on the same idea but apply it to adversarial inputs rather than agent outputs,
+and we operate in real time rather than as a post-hoc audit.
+
+\section{The AgentDojo Benchmark}
 \label{sec:bg-agentdojo}
 
-% AgentDojo as a benchmark: banking environment, tool suite, injection task framework.
-% Why it is a meaningful evaluation arena: explicit system policies, realistic tasks,
-% well-defined injection goals (attacker wants a specific prohibited action executed).
-% Structure: user tasks, injection tasks, utility and security metrics.
+AgentDojo is a framework for evaluating the security of LLM agents against task
+injection attacks~\cite{rogueSecurityPromptInjectionsBenchmark}.
+It provides a banking environment with a realistic set of tools: the agent can read
+files, query transactions, retrieve account information, send money, update passwords,
+and schedule payments.
+User tasks specify what the agent should accomplish; injection tasks specify what an
+attacker wants the agent to do instead.
+The benchmark measures both utility (does the agent complete the user's task?) and
+security (does the agent resist the injection?).
+
+We use AgentDojo for two reasons.
+First, the banking environment has clear, natural security policies.
+Second, the benchmark provides a standard evaluation harness that makes our results
+reproducible.
+
+We extend AgentDojo with a custom suite of 10 attack categories and a set of benign
+tasks designed to test specific properties of the firewall.
+The standard AgentDojo calibration tasks serve as an additional reference point.
+The full suite is described in Section~\ref{sec:eval-taxonomy}.

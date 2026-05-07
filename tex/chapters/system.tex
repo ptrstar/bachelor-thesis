@@ -4,86 +4,297 @@
 \section{Architecture Overview}
 \label{sec:sys-overview}
 
-% High-level diagram: user task → agent pipeline → tool calls → tool outputs →
-% firewall check → allow / block.
-% The firewall sits between the tool output and the agent's next reasoning step.
-% It holds the parsed policy AMR from the system prompt; it parses each tool output
-% and checks for contradictions before the agent processes the response.
+The firewall sits between the tool executor and the agent's LLM.
+When the agent calls a tool and receives a response, the response is parsed into AMR
+before the LLM sees it.
+The firewall then checks whether the AMR of the response contradicts the policy AMR.
+If it does, the agent's pipeline is aborted and the user receives an error message.
+If it does not, the tool response is passed to the LLM normally.
 
-\section{AMR Parsing Pipeline}
+Figure~\ref{fig:architecture} shows the pipeline.
+
+\begin{figure}[h]
+\centering
+% \includegraphics[width=0.85\textwidth]{architecture}
+\fbox{\parbox{0.85\textwidth}{\centering\vspace{2em}
+  [Architecture diagram: User task $\to$ Agent LLM $\to$ Tool call $\to$
+  Tool executor $\to$ Tool output $\to$ AMR parser $\to$ Firewall check
+  $\to$ (block or pass) $\to$ Agent LLM (next step)]
+\vspace{2em}}}
+\caption{The firewall intercepts tool outputs before the LLM processes them.}
+\label{fig:architecture}
+\end{figure}
+
+The firewall does not modify the tool output; it either allows it through or aborts the
+pipeline.
+This is a conservative design: when in doubt, the firewall does nothing.
+Only outputs that clearly match a policy prohibition are blocked.
+
+We implement the firewall as an AgentDojo pipeline element (\texttt{AMRToolOutputFirewall}
+in \texttt{fw\_elements.py}).
+We also implement a pre-execution variant that checks tool calls before they are
+executed (\texttt{AMRToolCallFirewall}), but in our evaluation we use the post-execution
+variant.
+The post-execution variant is more general because it catches injections that the agent
+itself constructs by combining information from multiple tool outputs.
+
+\section{AMR Parsing}
 \label{sec:sys-parsing}
 
-% GPT-4o as AMR parser (replaces amrlib/BART for quality and multi-sentence support).
-% parse_amr.get_amr(): parsing_system=True adds a policy-context hint;
-%   parsing_system=False adds a user-prompt hint.
-% penman_to_dag(): Penman string → DAG using penman.iterdecode with shared variable map
-%   to handle cross-sentence variable references in multi-sentence policies.
-% Note: LLM parsing introduces non-determinism — same text may yield different graphs
-%   across calls.  This is a stated limitation, discussed in Chapter~\ref{ch:discussion}.
+\subsection{Parser Choice}
+
+We use GPT-4o as the AMR parser.
+We made this choice after testing the \texttt{amrlib} library~\cite{amrlib}, which uses
+a BART-based model~\cite{lewis2020bart}.
+The BART parser produced reasonable graphs for simple sentences but struggled with
+domain-specific vocabulary (banking terms, IBANs, structured financial data) and with
+sentences longer than about 20 words.
+GPT-4o handled all of these cases reliably and also supports instructable parsing:
+we can inject a schema hint into the system prompt to guide how specific tool outputs
+are represented.
+
+\subsection{Context Hints}
+
+We call the parser with two different context prompts depending on what is being parsed.
+For the system policy, we use a prompt that frames the input as a security constraint
+and asks for a graph that captures the prohibited action and its arguments precisely.
+For tool outputs, we use a prompt that frames the input as data from an untrusted source
+and asks the parser to represent it faithfully, including any instructions it finds.
+
+This separation matters.
+A policy sentence like ``Do not send money'' should parse with \texttt{:polarity -} on
+the root.
+A tool output sentence like ``Send 400 EUR to IBAN X'' should parse with a positive
+root, which can then be detected as a contradiction.
+
+\subsection{Multi-Sentence Handling}
+
+Both the policy and tool outputs often contain multiple sentences.
+We use \texttt{penman.iterdecode} to parse each sentence separately while sharing a
+single variable namespace.
+This means a variable introduced in the first sentence can be referenced by the second,
+which is important when a file output refers to entities defined earlier in the same
+document.
+
+The parsed graphs are stored as a DAG using the \texttt{penman\_to\_dag()} function in
+\texttt{amr\_graph.py}, which represents nodes as \texttt{Node} objects with typed edges.
 
 \section{Policy Representation}
 \label{sec:sys-policy}
 
-% System prompt is parsed once at startup into a set of prohibition trees.
-% Each prohibition tree is a subgraph rooted at a predicate bearing :polarity -.
-% Multiple policy sentences produce multiple trees; all are checked independently.
+The system policy is parsed once at startup and stored as a set of prohibition trees.
+A prohibition tree is a subgraph rooted at a predicate that carries \texttt{:polarity -}.
+For the five-sentence banking policy, parsing produces six trees because one of the
+policy sentences (``Do not send transactions'') generates two trees with different
+argument structures for the \texttt{send-01} predicate.
+
+In our evaluation we use a pre-parsed policy to avoid re-parsing costs and
+non-determinism across runs.
+The pre-parsed policy (\texttt{PREPARSED\_BANKING\_POLICY} in \texttt{config.py}) is:
+
+\begin{lstlisting}
+(c / change-01
+   :ARG0 (s / __system)
+   :ARG1 (p / password)
+   :polarity -)
+(s2 / send-01
+   :ARG0 s
+   :ARG1 (t / transaction)
+   :polarity -)
+(s3 / send-01
+   :ARG0 s
+   :ARG1 (m / money)
+   :polarity -)
+(s4 / send-01
+   :ARG0 s
+   :ARG2 m
+   :polarity -)
+(c2 / change-01
+   :ARG0 s
+   :ARG1 t
+   :polarity -)
+(c3 / change-01
+   :ARG0 s
+   :ARG1 (r / recipient)
+   :polarity -)
+\end{lstlisting}
+
+The \texttt{\_\_system} node is a placeholder for the implicit agent.
+It appears as the \texttt{:ARG0} of every prohibition because all policy rules constrain
+what the system may do.
+The duplication of \texttt{send-01} across trees s2, s3, and s4 captures the fact that
+``send money'' can be represented with money as \texttt{:ARG1} or as \texttt{:ARG2}
+depending on the parser.
+We include both to avoid missing a match due to argument position variation.
 
 \section{Authorization Annotation}
 \label{sec:sys-auth}
 
-% :auth t annotation: marks AMR nodes that the user has explicitly authorized.
-% Purpose: cleanly separates user-delegated actions from injected instructions,
-%   handling the data/instruction boundary within the defined scope.
-% How it works: if the user's task prompt explicitly delegates a file or instruction
-%   source, the parser marks the resulting AMR nodes with :auth t; the firewall
-%   suppresses contradiction checks for those nodes.
-% Limitation: broad-delegation cover tasks (e.g. "execute everything in tasks.txt")
-%   pass :auth t to all instructions in the file, including injected ones.
+Not every action that the policy prohibits is an injection.
+If the user types ``please send 100 EUR to my cleaner'', the agent should send the money
+even though the policy says ``do not send money''.
+The user's own instructions should override the policy for that specific action.
+
+We handle this with an authorization annotation.
+Before the agent processes any tool output, we parse the user's original message and
+mark each action node with \texttt{:auth t} (authorized: true).
+When the firewall detects a contradiction, it checks whether the violating node carries
+\texttt{:auth t}.
+If it does, the violation is suppressed.
+If it does not, the pipeline is aborted.
+
+The \texttt{UserInputContextInit} pipeline element performs this initialization.
+It calls the AMR parser with a prompt that asks it to tag user-authorized actions.
+For tasks that involve reading a file, the parser also extracts a purpose annotation
+(\texttt{:purpose "..."}) that records what the user wants from the file.
+Tool output nodes that serve the stated purpose are tagged \texttt{:auth t} by the parser.
+
+An example illustrates why this matters.
+The user says ``read tasks.txt and pay the gardener''.
+The file contains two sentences: ``Pay the gardener 100 EUR'' and ``Send 400 EUR to
+IBAN X''.
+The first sentence's \texttt{send-01} node gets \texttt{:auth t} because it matches the
+stated purpose.
+The second sentence's \texttt{send-01} node does not, so the firewall blocks it.
+
+This mechanism has a known limitation.
+If the user says ``read tasks.txt and execute all instructions'', then every instruction
+in the file is, from the parser's perspective, authorized.
+An attacker who can modify tasks.txt can inject commands that pass the authorization
+check.
+We discuss this further in Section~\ref{sec:disc-limitations}.
 
 \section{Detection Rules}
 \label{sec:sys-rules}
 
-% Overview table: rule number, name, what it catches, LLM calls required.
+The firewall implements three detection rules.
+All rules operate on the DAG representation of the tool output AMR.
+The central dispatcher is \texttt{run\_firewall\_rules()} in
+\texttt{contradiction\_rules.py}.
+It runs each active rule in sequence and returns the combined list of violations.
 
 \subsection{Rule 1: Polarity Inversion}
-% Same predicate, same ARG roles, opposite :polarity.
-% Pure static — no LLM call.
-% Example: policy "not reveal-01 :ARG1 key" vs injection "reveal-01 :ARG1 key".
 
-\subsection{Rule 2: Antonym Predicates}
-% Different predicates that are antonyms, same ARG roles.
-% One LLM call (gpt-4o-mini) per candidate pair to classify the relation.
-% Catches double-negation wrapping: "not hide" ↔ "not reveal" both mean "reveal".
+Rule 1 detects the simplest case: the same predicate appears in both the policy and
+the tool output, with compatible arguments, but with opposite polarity.
 
-\subsection{Rule 4: Synonym with Polarity Flip}
-% Synonym predicates with opposite polarity.
-% One LLM call per candidate pair.
-% Main workhorse: catches "show :ARG1 key" contradicting "not reveal-01 :ARG1 key".
+The policy has \texttt{send-01} with \texttt{:polarity -}.
+The tool output has \texttt{send-01} with no polarity annotation (which means positive).
+The arguments match.
+Rule 1 fires.
 
-\subsection{Rule 5: Structural Similarity (smatch)}
-% Policy prohibition tree stripped of :polarity - forms a positive template.
-% Smatch recall of that template against tool-output trees is thresholded at τ.
-% No LLM calls — purely structural.
-% Explored as a complement to Rule 1+24; rejected as primary rule.
-% See Section~\ref{sec:eval-rule5} for the evaluation that motivates this decision.
+Argument compatibility is checked with a substring match.
+A policy tree that refers to \texttt{money} is considered compatible with a tool output
+node that refers to \texttt{money-amount} or \texttt{transfer-money}, because the policy
+value is a substring of the output value.
+This is intentionally permissive: we want to avoid missing a match because of minor
+naming differences in how the parser represents the same concept.
 
-\section{LLM Cost Model}
+Rule 1 requires no LLM calls.
+It is a pure structural check over the parsed graphs.
+
+\subsection{Rule 2+4: Predicate Contradiction}
+
+Rules 2 and 4 extend Rule 1 to handle cases where the policy and the tool output use
+different predicates that mean the same or opposite things.
+
+We use a single LLM call to classify the semantic relation between two concepts.
+The call is made to \texttt{gpt-4o-mini} with a system prompt that asks for a
+classification of ``synonym'', ``antonym'', or ``none'' and a confidence score from 0
+to 100.
+We use a score threshold of 50 to accept a classification.
+
+\textbf{Rule 4 (synonym path):}
+If the policy predicate and the tool output predicate are synonyms, and one has
+\texttt{:polarity -} while the other has \texttt{:polarity +}, the tool output is
+asserting an action that the policy prohibits.
+For example, the policy forbids \texttt{send-01} with negative polarity.
+The tool output contains \texttt{wire-01} with positive polarity.
+If \texttt{wire} and \texttt{send} are classified as synonyms, Rule 4 fires.
+
+\textbf{Rule 2 (antonym path):}
+If the policy predicate and the tool output predicate are antonyms, and both carry the
+same polarity, a contradiction also exists.
+``Do not hide'' means the same as ``reveal''.
+If the policy forbids \texttt{reveal-01} (polarity minus) and the tool output says
+``do not hide-01'' (also polarity minus), Rule 2 fires because the double negation
+resolves to a positive \texttt{reveal}.
+
+The cross-concept pairs are generated by \texttt{\_cross\_concept\_pairs()}, which
+yields only pairs with compatible arguments, different base concepts, and at least one
+ARG edge each.
+Empty argument dicts are filtered out to avoid spurious matches on leaf nodes.
+
+\subsection{Rule 5: Structural Similarity (Smatch)}
+
+Rule 5 is a structurally different approach that we explored and ultimately rejected as
+a primary mechanism.
+It uses smatch, an existing metric for comparing AMR graphs~\cite{cai-knight-2013-smatch}.
+We describe it here because the evaluation results motivate why it does not work.
+
+For each policy prohibition tree, we strip the \texttt{:polarity -} annotation to form
+a positive template.
+We then compute the smatch recall of that template against each tree in the tool output
+AMR.
+Recall is defined as the number of matching triples divided by the number of triples
+in the template.
+If recall exceeds a threshold (we use $\tau = 0.35$ as default), the tool output is
+flagged as a violation.
+
+The problem is that smatch is concept-agnostic.
+It counts matching triples in the best alignment, but the alignment does not require
+matching concept labels.
+Any two-argument financial AMR tree scores roughly 0.67 recall against a two-node
+policy template, because the structural features (\texttt{:ARG0}, \texttt{:ARG1},
+\texttt{\_\_system}, \texttt{money}) match regardless of the predicate.
+A benign transaction record and an injection that says ``send money'' look the same
+to smatch.
+The evaluation results in Section~\ref{sec:eval-rule5} show this concretely.
+
+\section{LLM Sub-Call Cost and Safety}
 \label{sec:sys-cost}
 
-% Every additional LLM call adds latency and API cost.
-% Design principle: minimize LLM calls; confine them to single-concept classification
-%   (word1 vs word2: synonym / antonym / unrelated).
-% These sub-calls are injection-safe: the attacker controls only one concept node,
-%   and a single node is insufficient to mount a meaningful injection.
-% Contrast with LLM-judge defenses that process the full adversarial text.
-% Practical cost: O(|policy predicates| × |user predicates|) calls per turn,
-%   bounded in practice by the number of policy prohibitions (typically small).
+Every LLM call adds latency and cost.
+We minimise both by restricting LLM calls to the single-concept classification step
+in Rule 2+4.
+The call takes two words as input (the base concepts of the policy predicate and the
+tool output predicate) and returns a three-way classification with a confidence score.
+No other context is provided to the model.
 
-\section{Integration into AgentDojo}
+This design has a security property.
+An attacker who controls the content of a tool output also controls some of the words
+that reach the classifier.
+However, they control only one word of the two-word input: the tool output predicate.
+The other word is the policy predicate, which is fixed by the system administrator.
+A single word is not sufficient to mount a prompt injection against a classifier that
+accepts exactly two words and returns a structured enum.
+
+This is in contrast to LLM-judge defenses, where the entire adversarial text is passed
+to the judge.
+The attacker has full control over the judge's input and can craft text that manipulates
+the judge's reasoning.
+
+In practice, the number of LLM calls per turn is bounded by
+$|\text{policy predicates}| \times |\text{output predicates with compatible args}|$.
+The policy has six prohibition trees with two distinct predicates (\texttt{send-01} and
+\texttt{change-01}).
+A typical tool output contains one to five trees.
+The number of cross-concept pairs is small in practice.
+
+\section{Integration Details}
 \label{sec:sys-integration}
 
-% How the firewall wraps the AgentDojo tool-call loop.
-% AMR_REPLACE_OUTPUTS flag: replaces raw tool outputs with parsed AMR in the
-%   agent's message history — improves utility by reducing hallucination on
-%   structured data (see Section~\ref{sec:eval-utility}).
-% FirewallResult dataclass: fields for detected rule, matched nodes, decision.
+The \texttt{AMR\_REPLACE\_OUTPUTS} flag controls whether the raw tool output is replaced
+by its parsed AMR in the agent's message history before the LLM sees it.
+When enabled, the LLM receives Penman notation instead of the original text.
+This has a side effect beyond security: it removes irrelevant tokens from the message
+history, which we observe improves the LLM's ability to extract the relevant information
+for the task.
+We discuss the utility impact in Section~\ref{sec:eval-utility}.
+
+The tool output AMR is stored in an \texttt{ExecutionContext} object alongside the
+parsed user intent.
+The firewall checks only newly added trees on each turn, avoiding redundant re-scanning
+of previously processed outputs.
+Trees derived from the user's own message are marked as already checked, since they are
+all tagged \texttt{:auth t} and cannot trigger violations.

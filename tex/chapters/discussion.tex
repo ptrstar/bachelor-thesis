@@ -1,71 +1,153 @@
 \chapter{Discussion}
 \label{ch:discussion}
 
-\section{Capabilities of AMR-Based Detection}
+\section{What the Approach Gets Right}
 \label{sec:disc-capabilities}
 
-% AMR absorbs surface variation: synonym predicates, different wordings, embedded
-%   instructions in structured fields all unify under the same graph structure.
-% Zero false positives under Rule1+24: predicate-level agreement is a precise signal.
-% Injection-safe sub-calls: single-concept synonym/antonym queries cannot be exploited
-%   because the attacker controls only one concept node — insufficient for injection.
-% Authorization annotation cleanly separates delegated from injected actions within scope.
+The central result is that a concise five-sentence policy is sufficient to detect a
+substantial fraction of injection attacks with zero false positives on benign tasks.
+This is a meaningful baseline: a system administrator can write the policy in under a
+minute, and the firewall will enforce it without human review of individual inputs.
+
+AMR's role is to make the policy enforcement robust to surface variation.
+The attacker cannot evade Rule 1 by rephrasing ``send'' with different words, because
+the parser maps many surface forms to the same predicate.
+They cannot evade Rule 2+4 by using synonymous predicates, because the LLM classifier
+recognises synonymy at the concept level.
+The category B results confirm this: ``wire'', ``remit'', and ``disburse'' are all
+caught because the classifier correctly identifies them as synonyms of ``send''.
+
+The authorization mechanism works well in the cases it was designed for.
+When the user requests an action that the policy would otherwise prohibit, the firewall
+correctly allows it.
+Benign money transfers and password changes requested by the user are not blocked.
+This means the firewall adds security without requiring the policy to be more restrictive
+than the user's actual needs.
+
+The LLM sub-calls in Rule 2+4 are both useful and safe.
+They are useful because they extend the detection class beyond exact predicate matches.
+They are safe because the attacker controls only one of the two words passed to the
+classifier, and a single word is not a meaningful attack surface.
 
 \section{Limitations}
 \label{sec:disc-limitations}
 
-\subsection{LLM Parsing Non-Determinism}
-% The AMR graph for a given text depends on the LLM parser; output varies across calls.
-% Injections phrased far from PropBank canonical frames (euphemisms, buried sentences,
-%   unusual metaphors) may not produce a graph that triggers any rule.
-% Mitigation directions: constrained decoding, deterministic rule-based parsers for
-%   well-typed domains.
+\subsection{Parser Dependence}
 
-\subsection{Broad-Delegation Vulnerability}
-% When the user explicitly delegates a task file, :auth t applies to all instructions
-%   within it, including injected ones.
-% This is not a logic error but a fundamental limit of user-level authorization.
-% Requires intent verification beyond the current AMR policy model.
+Every claim the firewall makes is contingent on the quality of the AMR parser.
+If the parser does not map an injection to a predicate that the rules can detect, the
+injection passes through unchecked.
+This is the root cause of the persistent misses in categories F, G, and I.
 
-\subsection{Structural Ambiguity}
-% Concept-agnostic graph matching (Rule5 / smatch) cannot distinguish financially
-%   malicious from financially benign AMR trees.
-% Meaningful graph-based detection in typed domains requires concept-sensitive matching,
-%   which reintroduces the need for semantic knowledge already supplied by Rule1+24.
+The dependence is not unique to our approach: any semantic analysis system faces it.
+But it is worth being explicit about.
+The firewall does not provide a cryptographic or formal guarantee of detection.
+It provides a best-effort semantic analysis using a language model, and that analysis
+can fail on inputs that are far from the parser's training distribution.
 
-\section{Abstraction Mismatch Extension}
+Non-determinism is a related issue.
+Running the parser on the same input twice may produce different graphs, and a graph
+that triggers a rule in one run may not trigger it in another.
+We mitigate this for the policy by using a fixed pre-parsed representation, but tool
+output parsing varies between runs.
+
+\subsection{Broad-Delegation Boundary}
+
+When the user explicitly delegates execution authority to an external source, the
+authorization mechanism marks all instructions in that source as authorized.
+This is logically correct: the user said ``execute all instructions in tasks.txt'',
+so the firewall honours that.
+But it means that an attacker who can modify tasks.txt can inject any instruction
+they want.
+
+There is no fix for this at the firewall level.
+The problem is that the user's authorization is broader than their intent.
+The user meant ``execute the gardener payment I know is in tasks.txt'', not ``execute
+everything in tasks.txt including anything an attacker may have added''.
+Bridging this gap requires verifying the user's intent at a finer level of granularity
+than the current mechanism supports.
+
+\subsection{Structural Similarity Is Insufficient}
+
+The Rule 5 evaluation demonstrates that graph structural similarity, by itself, is not
+a reliable basis for injection detection in the financial domain.
+The problem is concept-agnosticism: smatch cannot distinguish ``send money'' from
+``record a money transfer'' because both have similar structural patterns.
+Any metric that treats all matched triples equally will face this limitation in domains
+where the same structural patterns appear in both malicious and benign contexts.
+
+The lesson is that structural matching can complement semantic matching but cannot
+replace it.
+Meaningful graph-based detection in typed domains requires concept-sensitive comparison,
+which brings us back to the need for semantic knowledge.
+
+\section{Extending the Approach to Abstract Policies}
 \label{sec:disc-abstraction}
 
-% Problem: "don't give financial advice" vs "buy Tesla stock" — normal predicate
-%   matching fails because "buy" does not appear in the policy.
-% Proposed extension: query the LLM with the full policy phrase and the top AMR
-%   concept node from the injection ("buy-01 :mode imperative").
-%   The LLM evaluates whether the concept constitutes an instance of the policy.
-%   The attacker controls only "buy-01"; a single-node query is injection-safe
-%   by the same argument as the synonym sub-calls.
-% This extends the detection class to abstract policies without sacrificing the
-%   injection-safety property of the LLM sub-calls.
-% Sketch the call interface; note this is future work.
+Our evaluation uses a concrete policy: ``do not send money''.
+Real-world policies are often more abstract: ``do not give financial advice'', ``do not
+make commitments on behalf of the user''.
+
+Dr.\ James Chiang observed that the synonym evaluation approach should be extendable
+to this case.
+Consider the policy ``do not give financial advice'' against an injection that causes
+the agent to say ``buy Tesla stock''.
+The injection's AMR root is \texttt{buy-01} with an imperative mode, which does not
+directly match \texttt{advise-01} or any synonym in the policy.
+
+A natural extension is to pass the full policy phrase alongside the top AMR concept
+node from the injection to the LLM classifier, asking whether the concept is an
+instance of the policy category.
+The query becomes: ``is \texttt{buy-01 (imperative)} an instance of financial advice?''
+
+This query is still injection-safe by the same argument as the existing sub-calls.
+The attacker controls the concept ``buy-01'', which is one input to the query.
+The policy phrase is fixed by the system.
+The attacker cannot mount a meaningful injection with only one injected concept.
+
+We leave the implementation of this extension as future work, but we note that
+it does not require any change to the core architecture.
+It adds one additional LLM call type to the rule set.
 
 \section{Future Directions}
 \label{sec:disc-future}
 
 \subsection{Information Flow Taint Tracking}
-% CaMeL-style approach: label each value in the agent's context with a trust level
-%   (user-authorised vs. tool-output-derived).
-% Track how tainted values flow through tool calls and reasoning steps.
-% Flag when a tainted value influences a privileged action (e.g. a financial transfer).
-% This complements the AMR semantic check: taint catches injections that change
-%   \emph{parameters} of authorized actions rather than invoking forbidden predicates.
+
+The CaMeL system~\cite{abdelnabi2025firewalls} approaches agent security from an
+information-flow perspective: data is tagged with its trust level and the system tracks
+how tagged values propagate through the agent's computations.
+A tainted value that reaches a privileged tool call is flagged.
+
+This approach is complementary to ours.
+AMR-based detection catches injections that assert a forbidden action.
+Taint tracking catches injections that change the parameters of an otherwise allowed
+action.
+For example, if the user says ``send my cleaner her regular payment'' and an injection
+replaces the cleaner's IBAN with the attacker's IBAN, the predicate is still
+\texttt{send-01} and the action is still ``authorized''.
+The AMR firewall will not catch it; taint tracking would, because the IBAN value
+originated from an untrusted source.
+Combining the two approaches would cover more of the attack space.
 
 \subsection{User-Defined Variable Binding}
-% Allow the user to bind named variables at task start (e.g. MY\_IBAN = "DE89...").
-% Tool outputs cannot overwrite these bindings.
-% Any instruction that references a different value for the same role is flagged.
-% This directly addresses the IBAN-swap attack class without requiring predicate matching.
 
-\subsection{Expanded Attack Taxonomy and Benchmark}
-% The current suite covers categories A–J; systematic coverage of indirect injection
-%   vectors (image alt-text, PDF metadata, calendar descriptions) is future work.
-% Differential testing: compare firewall behaviour on raw text vs. AMR-replaced
-%   message history to isolate the contribution of each component.
+A simpler mechanism for the IBAN-substitution class of attacks is to let the user
+bind named variables at task start.
+The user says ``send my cleaner her payment; her IBAN is DE89370400440532013000''.
+The system records this binding.
+Any instruction that references a different value for the same role (``send money to
+IBAN US133000000121212121212'') can be flagged without needing taint propagation.
+Tool outputs cannot overwrite user-defined bindings.
+This is a narrow but practically important mechanism for protecting specific data items
+that the user cares about.
+
+\subsection{Broader Evaluation Coverage}
+
+Our attack suite covers ten injection categories but focuses on the banking domain.
+The same framework could be applied to other domains (email assistants, calendar
+managers, code execution agents) with domain-specific policies.
+Some injection vectors we did not test systematically include instructions embedded in
+image alt-text, PDF metadata, and calendar event descriptions.
+These involve the same semantic principles but different parsing challenges and may
+benefit from tool-specific AMR schemas.

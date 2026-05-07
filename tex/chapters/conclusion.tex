@@ -1,21 +1,37 @@
 \chapter{Conclusion}
 \label{ch:conclusion}
 
-% Restate the research question: can AMR-based static analysis help detect prompt injection?
-% Answer: yes, within a well-defined scope — explicit system policies, AgentDojo-style
-%   agent environments — and with a formally motivated detection class.
+This thesis asked whether AMR-based static analysis can detect prompt injection attacks
+in LLM agents.
+The answer is yes, within a well-defined scope.
 
-% Summarize the key contributions:
-%   - Scoped formal definition of prompt injection as AMR-graph contradiction.
-%   - Static firewall (Rule1+24) with zero false positives and high detection rate.
-%   - Demonstrated that structural graph similarity (smatch) is insufficient alone.
-%   - Authorization annotation mechanism for the data/instruction boundary.
+A concise five-sentence policy, encoded as AMR prohibition trees, is sufficient to
+detect a substantial fraction of injection attacks on the AgentDojo banking benchmark
+with zero false positives.
+The key enabler is AMR's lossy compression property: surface variation is absorbed by
+the parser, and the forbidden predicate survives in a form the static rules can match.
+A minimal addition of LLM calls, scoped to single-concept synonym classification,
+extends the detection class to cover synonymous predicates without introducing
+injection-vulnerable components.
 
-% Restate the honest scope: broad-delegation attacks remain outside the defined class.
-%   This is a clean boundary, not a gap — it identifies the preconditions under which
-%   AMR-based static detection provides formal guarantees.
+The approach has clear limits.
+It depends on parser quality, and any injection phrased in a way the parser does not
+map to a policy predicate will not be detected.
+It does not cover broad-delegation attacks where the user has authorised an external
+instruction source.
+It does not cover implicit or abstract policies without the extension sketched in
+Section~\ref{sec:disc-abstraction}.
 
-% Close with the broader implication: AMR offers a principled, injection-safe
-%   representation layer for policy-constrained LLM agents.
-%   The abstraction mismatch extension and taint-tracking directions suggest a path
-%   toward wider coverage without sacrificing the injection-safety property.
+These limits do not diminish the result.
+A detector that is honest about what it can and cannot do is more trustworthy than one
+that claims broad coverage it cannot justify.
+The evaluation shows that Rule1+24 provides reliable, high-precision detection for the
+attacks in its scope, and the scope is well-matched to the most common direct injection
+techniques.
+
+The broader implication is that semantic graph representations are a viable layer in
+the LLM agent security stack.
+They are interpretable, formally motivated, and resistant to the surface obfuscation
+techniques that defeat keyword and pattern-based defenses.
+Combined with complementary mechanisms such as taint tracking and variable binding,
+they could form a practical basis for policy-constrained agent deployment.

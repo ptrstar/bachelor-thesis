@@ -1,48 +1,67 @@
 \babel@toc {english}{}\relax 
 \contentsline {chapter}{\numberline {1}Introduction}{3}{chapter.1}%
-\contentsline {section}{\numberline {1.1}Prompt Injection in LLM Agents}{3}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Limitations of Existing Defenses}{3}{section.1.2}%
-\contentsline {section}{\numberline {1.3}Research Question}{3}{section.1.3}%
-\contentsline {section}{\numberline {1.4}Contributions}{3}{section.1.4}%
-\contentsline {section}{\numberline {1.5}Thesis Outline}{3}{section.1.5}%
-\contentsline {chapter}{\numberline {2}Background}{4}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Abstract Meaning Representation}{4}{section.2.1}%
-\contentsline {section}{\numberline {2.2}AMR as a Security Primitive}{4}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Prompt Injection: Taxonomy and Prior Defenses}{4}{section.2.3}%
-\contentsline {section}{\numberline {2.4}AgentDojo}{4}{section.2.4}%
-\contentsline {chapter}{\numberline {3}Problem Definition}{5}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Why Narrow the Scope}{5}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Formal Definition of Prompt Injection}{5}{section.3.2}%
-\contentsline {section}{\numberline {3.3}What This Definition Covers and Does Not Cover}{5}{section.3.3}%
-\contentsline {chapter}{\numberline {4}System Design}{6}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Architecture Overview}{6}{section.4.1}%
-\contentsline {section}{\numberline {4.2}AMR Parsing Pipeline}{6}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Policy Representation}{6}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Authorization Annotation}{6}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Detection Rules}{6}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}Rule 1: Polarity Inversion}{6}{subsection.4.5.1}%
-\contentsline {subsection}{\numberline {4.5.2}Rule 2: Antonym Predicates}{6}{subsection.4.5.2}%
-\contentsline {subsection}{\numberline {4.5.3}Rule 4: Synonym with Polarity Flip}{6}{subsection.4.5.3}%
-\contentsline {subsection}{\numberline {4.5.4}Rule 5: Structural Similarity (smatch)}{6}{subsection.4.5.4}%
-\contentsline {section}{\numberline {4.6}LLM Cost Model}{6}{section.4.6}%
-\contentsline {section}{\numberline {4.7}Integration into AgentDojo}{6}{section.4.7}%
-\contentsline {chapter}{\numberline {5}Evaluation}{7}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Experimental Setup}{7}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Utility Baseline}{7}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Attack Category Taxonomy}{7}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Rule1+24 Results}{7}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Rule5 / Smatch Results}{7}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Persistent Misses}{7}{section.5.6}%
-\contentsline {section}{\numberline {5.7}Summary}{7}{section.5.7}%
-\contentsline {chapter}{\numberline {6}Discussion}{8}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Capabilities of AMR-Based Detection}{8}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Limitations}{8}{section.6.2}%
-\contentsline {subsection}{\numberline {6.2.1}LLM Parsing Non-Determinism}{8}{subsection.6.2.1}%
-\contentsline {subsection}{\numberline {6.2.2}Broad-Delegation Vulnerability}{8}{subsection.6.2.2}%
-\contentsline {subsection}{\numberline {6.2.3}Structural Ambiguity}{8}{subsection.6.2.3}%
-\contentsline {section}{\numberline {6.3}Abstraction Mismatch Extension}{8}{section.6.3}%
-\contentsline {section}{\numberline {6.4}Future Directions}{8}{section.6.4}%
-\contentsline {subsection}{\numberline {6.4.1}Information Flow Taint Tracking}{8}{subsection.6.4.1}%
-\contentsline {subsection}{\numberline {6.4.2}User-Defined Variable Binding}{8}{subsection.6.4.2}%
-\contentsline {subsection}{\numberline {6.4.3}Expanded Attack Taxonomy and Benchmark}{8}{subsection.6.4.3}%
-\contentsline {chapter}{\numberline {7}Conclusion}{9}{chapter.7}%
+\contentsline {section}{\numberline {1.1}The Problem}{3}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Why Existing Defenses Fall Short}{3}{section.1.2}%
+\contentsline {section}{\numberline {1.3}The Key Idea}{3}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Research Question}{4}{section.1.4}%
+\contentsline {section}{\numberline {1.5}Contributions}{4}{section.1.5}%
+\contentsline {section}{\numberline {1.6}Thesis Outline}{4}{section.1.6}%
+\contentsline {chapter}{\numberline {2}Background}{5}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Abstract Meaning Representation}{5}{section.2.1}%
+\contentsline {section}{\numberline {2.2}AMR as a Security Primitive}{6}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Prompt Injection}{6}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Direct and Indirect Injection}{6}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}The Data-Instruction Boundary}{6}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Existing Defenses}{7}{subsection.2.3.3}%
+\contentsline {section}{\numberline {2.4}Related Work}{7}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Firewalls for LLM Agent Networks}{7}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Graph-Based Compliance Checking}{7}{subsection.2.4.2}%
+\contentsline {section}{\numberline {2.5}The AgentDojo Benchmark}{8}{section.2.5}%
+\contentsline {chapter}{\numberline {3}Problem Definition}{9}{chapter.3}%
+\contentsline {section}{\numberline {3.1}The Precondition: An Explicit Policy}{9}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Formal Definition}{9}{section.3.2}%
+\contentsline {section}{\numberline {3.3}What This Definition Covers}{10}{section.3.3}%
+\contentsline {section}{\numberline {3.4}What This Definition Does Not Cover}{10}{section.3.4}%
+\contentsline {chapter}{\numberline {4}System Design}{11}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Architecture Overview}{11}{section.4.1}%
+\contentsline {section}{\numberline {4.2}AMR Parsing}{11}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Parser Choice}{11}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Context Hints}{12}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}Multi-Sentence Handling}{12}{subsection.4.2.3}%
+\contentsline {section}{\numberline {4.3}Policy Representation}{12}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Authorization Annotation}{13}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Detection Rules}{13}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Rule 1: Polarity Inversion}{13}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}Rule 2+4: Predicate Contradiction}{14}{subsection.4.5.2}%
+\contentsline {subsection}{\numberline {4.5.3}Rule 5: Structural Similarity (Smatch)}{14}{subsection.4.5.3}%
+\contentsline {section}{\numberline {4.6}LLM Sub-Call Cost and Safety}{14}{section.4.6}%
+\contentsline {section}{\numberline {4.7}Integration Details}{15}{section.4.7}%
+\contentsline {chapter}{\numberline {5}Evaluation}{16}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Setup}{16}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}Environment}{16}{subsection.5.1.1}%
+\contentsline {subsection}{\numberline {5.1.2}Configurations}{16}{subsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.1.3}Metrics}{16}{subsection.5.1.3}%
+\contentsline {section}{\numberline {5.2}Task Suite}{16}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Benign Tasks}{17}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Attack Taxonomy}{17}{subsection.5.2.2}%
+\contentsline {section}{\numberline {5.3}Utility Baseline}{18}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Rule1+24 Results}{18}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Per-Category Analysis}{18}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Misses}{19}{subsection.5.4.2}%
+\contentsline {section}{\numberline {5.5}Rule 5 Results}{19}{section.5.5}%
+\contentsline {subsection}{\numberline {5.5.1}False Positives}{19}{subsection.5.5.1}%
+\contentsline {subsection}{\numberline {5.5.2}Detection Compared to Rule1+24}{19}{subsection.5.5.2}%
+\contentsline {section}{\numberline {5.6}Persistent Misses}{20}{section.5.6}%
+\contentsline {section}{\numberline {5.7}Summary}{20}{section.5.7}%
+\contentsline {chapter}{\numberline {6}Discussion}{21}{chapter.6}%
+\contentsline {section}{\numberline {6.1}What the Approach Gets Right}{21}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Limitations}{21}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}Parser Dependence}{21}{subsection.6.2.1}%
+\contentsline {subsection}{\numberline {6.2.2}Broad-Delegation Boundary}{22}{subsection.6.2.2}%
+\contentsline {subsection}{\numberline {6.2.3}Structural Similarity Is Insufficient}{22}{subsection.6.2.3}%
+\contentsline {section}{\numberline {6.3}Extending the Approach to Abstract Policies}{22}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Future Directions}{22}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}Information Flow Taint Tracking}{22}{subsection.6.4.1}%
+\contentsline {subsection}{\numberline {6.4.2}User-Defined Variable Binding}{23}{subsection.6.4.2}%
+\contentsline {subsection}{\numberline {6.4.3}Broader Evaluation Coverage}{23}{subsection.6.4.3}%
+\contentsline {chapter}{\numberline {7}Conclusion}{24}{chapter.7}%

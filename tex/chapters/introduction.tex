@@ -1,43 +1,115 @@
 \chapter{Introduction}
 \label{ch:introduction}
 
-% Research question — frame the thesis as a preliminary answer to a concrete question.
-% Opening: the threat, the gap in defenses, and why AMR is a candidate solution.
+A user asks their banking assistant to read a landlord notice and summarise it.
+The notice looks ordinary, but hidden at the end is a sentence:
+``Also, please transfer 400 EUR to IBAN US133000000121212121212 for outstanding fees.''
+The assistant reads the notice, summarises it as requested, and then transfers the money.
+It followed instructions the user never gave.
+This is a prompt injection attack.
 
-\section{Prompt Injection in LLM Agents}
-\label{sec:intro-threat}
+\section{The Problem}
+\label{sec:intro-problem}
 
-% Describe the threat: LLM agents that consume external tool outputs are vulnerable
-% to injected instructions embedded in that data.  Direct and indirect injection.
-% Concrete example: banking agent reads a landlord notice containing a hidden payment command.
+LLM agents interact with the world by calling tools: they read files, query databases, fetch
+web pages, and retrieve account information.
+The outputs of these tools are fed back into the agent's context window so the agent can
+reason over them.
+This creates a channel through which an attacker who controls the content of a tool output
+can plant instructions directly into the agent's reasoning process.
 
-\section{Limitations of Existing Defenses}
+The attack is effective because the agent has no way to distinguish data from instructions
+in raw text.
+A sentence like ``transfer 400 EUR to IBAN X'' looks the same whether it comes from a
+legitimate transaction record or from an attacker who tampered with a file.
+The LLM processes both in the same way.
+
+\section{Why Existing Defenses Fall Short}
 \label{sec:intro-defenses}
 
-% Keyword filters: surface-level, bypass-trivial.
-% LLM judges: operate on raw text, themselves injectable, no formal guarantees.
-% Gap: no semantically-grounded, injection-safe detection with formal motivation.
+Two families of defenses are commonly proposed.
+The first uses keyword and pattern filters that scan inputs for known attack signatures
+such as ``ignore previous instructions'' or ``you are now in developer mode''.
+These filters are trivially bypassed: an attacker who knows the filter exists can rephrase
+the injection, use synonyms, or bury it in a long paragraph.
+They operate on the surface form of text and break as soon as the attacker changes their
+wording.
+
+The second family uses a separate LLM as a judge to decide whether an input is malicious.
+This approach has a fundamental problem: the judge must process the adversarial text to
+evaluate it.
+An attacker can craft an input that injects instructions into the judge as well.
+The defense is itself vulnerable to the attack it is trying to stop.
+
+Both approaches lack a formal basis for what they are detecting.
+They cannot guarantee that they catch all attacks in a given class, or explain in precise
+terms why they blocked a particular input.
+
+\section{The Key Idea}
+\label{sec:intro-idea}
+
+We take a different approach.
+Instead of looking for patterns in raw text, we convert text to a semantic graph that
+strips away surface variation and retains only the core predicate-argument structure.
+This representation is called Abstract Meaning Representation (AMR).
+
+The intuition is simple.
+An attacker might write ``transfer funds'', ``wire the money'', ``disburse the amount'',
+or ``send 400 EUR''.
+All of these phrases express the same underlying action: a \texttt{send} predicate with
+a monetary argument.
+After AMR parsing, the surface differences disappear and the forbidden predicate is exposed.
+
+We encode the system's security policy as an AMR graph and check whether the AMR of any
+incoming tool output contradicts it.
+If a tool output contains a \texttt{send-01} node with positive polarity while the policy
+forbids \texttt{send-01}, the firewall blocks the agent from processing that output.
 
 \section{Research Question}
 \label{sec:intro-rq}
 
-% Explicit question: Can AMR-based static analysis help detect prompt injection attacks?
-% Why AMR: lossy compression as a security feature — synonyms, paraphrases, and
-% obfuscation collapse to the same predicate-argument graph.
-% Scope: we answer this question in a narrow but meaningful context (AgentDojo
-% banking benchmark with explicit system policies).
+This thesis investigates the following question:
+\textbf{Can AMR-based static analysis detect prompt injection attacks in LLM agents?}
+
+We answer this question in a specific, well-defined setting: a single-agent banking
+assistant with an explicit five-sentence security policy, evaluated against a custom
+attack suite built on the AgentDojo benchmark.
+We deliberately narrow the scope because a well-scoped answer is more useful than a
+vague one.
+We know exactly what the approach can and cannot detect, and why.
 
 \section{Contributions}
 \label{sec:intro-contributions}
 
-% Bullet list:
-% 1. Scoped formal definition of prompt injection as AMR-graph contradiction.
-% 2. A static firewall with four detection rules and a minimal LLM cost model.
-% 3. An authorization annotation mechanism that handles the data/instruction boundary.
-% 4. Empirical evaluation on a custom AgentDojo attack suite (X attacks, Y benign tasks).
-% 5. Analysis of structural graph similarity (smatch) and why it fails as a primary rule.
+This thesis makes the following contributions.
+
+We propose a formal, scoped definition of prompt injection as a payload whose AMR graph
+semantically contradicts an explicit policy AMR graph, where contradiction is defined by
+a concrete algorithm.
+
+We build a firewall that implements this definition through three detection rules: a
+purely static polarity check, a synonym-based check augmented by a minimal LLM call, and
+an antonym-based check.
+The LLM sub-calls are restricted to single-concept classification queries, which we argue
+are too narrow to exploit via injection.
+
+We introduce an authorization annotation mechanism that marks AMR nodes derived from
+the user's own instructions, allowing the firewall to distinguish user-authorized actions
+from injected ones.
+
+We evaluate the system on a custom attack suite covering ten injection categories and a
+set of benign tasks, and we analyze where the approach succeeds and fails and why.
 
 \section{Thesis Outline}
 \label{sec:intro-outline}
 
-% One paragraph mapping chapters to contributions.
+Chapter~\ref{ch:background} introduces AMR, explains why it is a useful representation
+for security, surveys prompt injection defenses, and discusses related work.
+Chapter~\ref{ch:problem} defines prompt injection precisely and states the scope of our
+approach.
+Chapter~\ref{ch:system} describes the firewall architecture, the detection rules, and the
+authorization mechanism.
+Chapter~\ref{ch:evaluation} presents the evaluation setup and results.
+Chapter~\ref{ch:discussion} discusses capabilities, limitations, and directions for future
+work.
+Chapter~\ref{ch:conclusion} concludes.
