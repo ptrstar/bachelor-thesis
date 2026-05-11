@@ -142,6 +142,9 @@ INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/
 INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/blx-compat.def
 INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/blx-compat.def
 INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/blx-compat.def
+INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/blx-bibtex.def
+INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/blx-bibtex.def
+INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/blx-bibtex.def
 INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/biblatex.def
 INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/biblatex.def
 INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/biblatex.def
@@ -224,7 +227,12 @@ INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/latexconf
 INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/lbx/english.lbx
 INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/lbx/english.lbx
 INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/biblatex/lbx/english.lbx
-OUTPUT main.bcf
+OUTPUT main-blx.bib
+INPUT main.bbl
+INPUT ./main.bbl
+INPUT ./main.bbl
+INPUT ./main.bbl
+INPUT main.bbl
 INPUT /opt/homebrew/Cellar/texlive/20260301/share/texmf-dist/tex/latex/graphics/color.sty
 INPUT ./main.out
 INPUT ./main.out

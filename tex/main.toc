@@ -15,7 +15,7 @@
 \contentsline {subsection}{\numberline {2.3.3}Existing Defenses}{7}{subsection.2.3.3}%
 \contentsline {section}{\numberline {2.4}Related Work}{7}{section.2.4}%
 \contentsline {subsection}{\numberline {2.4.1}Firewalls for LLM Agent Networks}{7}{subsection.2.4.1}%
-\contentsline {subsection}{\numberline {2.4.2}Graph-Based Compliance Checking}{7}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.2}Graph-Based Compliance Checking}{8}{subsection.2.4.2}%
 \contentsline {section}{\numberline {2.5}The AgentDojo Benchmark}{8}{section.2.5}%
 \contentsline {chapter}{\numberline {3}Problem Definition}{9}{chapter.3}%
 \contentsline {section}{\numberline {3.1}The Precondition: An Explicit Policy}{9}{section.3.1}%
@@ -31,14 +31,13 @@
 \contentsline {section}{\numberline {4.3}Policy Representation}{12}{section.4.3}%
 \contentsline {section}{\numberline {4.4}Authorization Annotation}{13}{section.4.4}%
 \contentsline {section}{\numberline {4.5}Detection Rules}{13}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}Rule 1: Polarity Inversion}{13}{subsection.4.5.1}%
-\contentsline {subsection}{\numberline {4.5.2}Rule 2+4: Predicate Contradiction}{14}{subsection.4.5.2}%
-\contentsline {subsection}{\numberline {4.5.3}Rule 5: Structural Similarity (Smatch)}{14}{subsection.4.5.3}%
+\contentsline {subsection}{\numberline {4.5.1}Predicate Contradiction Detection}{13}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}Rule 5: Structural Similarity (Smatch)}{14}{subsection.4.5.2}%
 \contentsline {section}{\numberline {4.6}Formal Specification}{14}{section.4.6}%
 \contentsline {paragraph}{Definitions.}{14}{section*.3}%
-\contentsline {paragraph}{Contradiction predicate.}{15}{section*.4}%
+\contentsline {paragraph}{Contradiction predicate.}{14}{section*.4}%
 \contentsline {paragraph}{Firewall decision procedure.}{15}{section*.5}%
-\contentsline {paragraph}{Complexity.}{16}{section*.6}%
+\contentsline {paragraph}{Complexity.}{15}{section*.6}%
 \contentsline {section}{\numberline {4.7}LLM Sub-Call Cost and Safety}{16}{section.4.7}%
 \contentsline {section}{\numberline {4.8}Integration Details}{16}{section.4.8}%
 \contentsline {chapter}{\numberline {5}Evaluation}{17}{chapter.5}%
@@ -46,28 +45,31 @@
 \contentsline {subsection}{\numberline {5.1.1}Environment}{17}{subsection.5.1.1}%
 \contentsline {subsection}{\numberline {5.1.2}Configurations}{17}{subsection.5.1.2}%
 \contentsline {subsection}{\numberline {5.1.3}Metrics}{17}{subsection.5.1.3}%
-\contentsline {section}{\numberline {5.2}Task Suite}{17}{section.5.2}%
+\contentsline {section}{\numberline {5.2}Task Suite}{18}{section.5.2}%
 \contentsline {subsection}{\numberline {5.2.1}Benign Tasks}{18}{subsection.5.2.1}%
 \contentsline {subsection}{\numberline {5.2.2}Attack Taxonomy}{18}{subsection.5.2.2}%
 \contentsline {section}{\numberline {5.3}Utility Baseline}{19}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Rule1+24 Results}{19}{section.5.4}%
-\contentsline {subsection}{\numberline {5.4.1}Per-Category Analysis}{19}{subsection.5.4.1}%
-\contentsline {subsection}{\numberline {5.4.2}Misses}{20}{subsection.5.4.2}%
-\contentsline {section}{\numberline {5.5}Rule 5 Results}{20}{section.5.5}%
-\contentsline {subsection}{\numberline {5.5.1}False Positives}{20}{subsection.5.5.1}%
-\contentsline {subsection}{\numberline {5.5.2}Detection Compared to Rule1+24}{20}{subsection.5.5.2}%
-\contentsline {section}{\numberline {5.6}Persistent Misses}{21}{section.5.6}%
-\contentsline {section}{\numberline {5.7}Summary}{21}{section.5.7}%
-\contentsline {chapter}{\numberline {6}Discussion}{22}{chapter.6}%
-\contentsline {section}{\numberline {6.1}What the Approach Gets Right}{22}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Limitations}{22}{section.6.2}%
-\contentsline {subsection}{\numberline {6.2.1}Parser Dependence}{22}{subsection.6.2.1}%
-\contentsline {subsection}{\numberline {6.2.2}Broad-Delegation Boundary}{23}{subsection.6.2.2}%
-\contentsline {subsection}{\numberline {6.2.3}Structural Similarity Is Insufficient}{23}{subsection.6.2.3}%
-\contentsline {section}{\numberline {6.3}Extending the Approach to Abstract Policies}{23}{section.6.3}%
-\contentsline {section}{\numberline {6.4}Future Directions}{23}{section.6.4}%
-\contentsline {subsection}{\numberline {6.4.1}Information Flow Taint Tracking}{23}{subsection.6.4.1}%
-\contentsline {subsection}{\numberline {6.4.2}User-Defined Variable Binding}{24}{subsection.6.4.2}%
-\contentsline {subsection}{\numberline {6.4.3}Broader Evaluation Coverage}{24}{subsection.6.4.3}%
-\contentsline {chapter}{\numberline {7}Conclusion}{25}{chapter.7}%
-\contentsline {chapter}{Bibliography}{26}{chapter*.10}%
+\contentsline {subsection}{\numberline {5.3.1}Effect of AMR Output Replacement}{19}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Utility Under the Firewall}{19}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}False Positive: Task 118}{19}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}Firewall Results}{20}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Per-Category Analysis}{20}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Persistent Misses}{21}{subsection.5.4.2}%
+\contentsline {section}{\numberline {5.5}Rule 5 Results}{21}{section.5.5}%
+\contentsline {subsection}{\numberline {5.5.1}False Positives}{21}{subsection.5.5.1}%
+\contentsline {subsection}{\numberline {5.5.2}Threshold Sensitivity}{21}{subsection.5.5.2}%
+\contentsline {subsection}{\numberline {5.5.3}Assessment}{22}{subsection.5.5.3}%
+\contentsline {section}{\numberline {5.6}Summary}{22}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Discussion}{23}{chapter.6}%
+\contentsline {section}{\numberline {6.1}What the Approach Gets Right}{23}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Limitations}{23}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}Parser Dependence}{23}{subsection.6.2.1}%
+\contentsline {subsection}{\numberline {6.2.2}Broad-Delegation Boundary}{24}{subsection.6.2.2}%
+\contentsline {subsection}{\numberline {6.2.3}Structural Similarity Is Insufficient}{24}{subsection.6.2.3}%
+\contentsline {section}{\numberline {6.3}Extending the Approach to Abstract Policies}{24}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Future Directions}{24}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}Information Flow Taint Tracking}{24}{subsection.6.4.1}%
+\contentsline {subsection}{\numberline {6.4.2}User-Defined Variable Binding}{25}{subsection.6.4.2}%
+\contentsline {subsection}{\numberline {6.4.3}Broader Evaluation Coverage}{25}{subsection.6.4.3}%
+\contentsline {chapter}{\numberline {7}Conclusion}{26}{chapter.7}%
+\contentsline {chapter}{Bibliography}{27}{chapter*.10}%

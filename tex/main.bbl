@@ -84,8 +84,7 @@
     \strng{fullhash}{BLBCCSGMGKHUKKKPPMSN1}
     \field{labelnamesource}{author}
     \field{labeltitlesource}{title}
-    \field{booktitle}{Proceedings of the 7th Linguistic Annotation Workshop and
-  Interoperability with Discourse}
+    \field{booktitle}{Proceedings of the 7th Linguistic Annotation Workshop and Interoperability with Discourse}
     \field{pages}{178\bibrangedash 186}
     \field{title}{Abstract Meaning Representation for Sembanking}
     \field{year}{2013}
@@ -213,8 +212,7 @@
     \field{labelnamesource}{author}
     \field{labeltitlesource}{title}
     \field{note}{PENMAN notation originates from the Penman project at ISI/USC}
-    \field{title}{Text Generation as Choice in a Multidimensional Meaning
-  Space}
+    \field{title}{Text Generation as Choice in a Multidimensional Meaning Space}
     \field{year}{1991}
   \endentry
 
@@ -237,8 +235,7 @@
     \strng{fullhash}{AORA1}
     \field{labelnamesource}{author}
     \field{labeltitlesource}{title}
-    \field{booktitle}{Proceedings of the 51st Annual Meeting of the Association
-  for Computational Linguistics (Volume 1: Long Papers)}
+    \field{booktitle}{Proceedings of the 51st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)}
     \field{pages}{228\bibrangedash 238}
     \field{title}{Universal Conceptual Cognitive Annotation (UCCA)}
     \verb{url}
@@ -302,8 +299,7 @@
     \verb{eprint}
     \verb 2510.26309
     \endverb
-    \field{title}{GraphCompliance: Aligning Policy and Context Graphs for
-  LLM-Based Regulatory Compliance}
+    \field{title}{GraphCompliance: Aligning Policy and Context Graphs for LLM-Based Regulatory Compliance}
     \verb{url}
     \verb https://arxiv.org/abs/2510.26309
     \endverb
@@ -323,7 +319,7 @@
     \strng{fullhash}{O1}
     \field{labelnamesource}{author}
     \field{labeltitlesource}{title}
-  \field{howpublished}{\url{https://owasp.org/www-community/attacks/PromptInjection}}
+    \field{howpublished}{\url{https://owasp.org/www-community/attacks/PromptInjection}}
     \field{note}{Accessed 2026-05-06}
     \field{title}{Prompt Injection}
     \field{year}{2026}
@@ -421,10 +417,8 @@
     \strng{fullhash}{DEZJBMBKLFMTF1}
     \field{labelnamesource}{author}
     \field{labeltitlesource}{title}
-    \field{booktitle}{The Thirty-eighth Annual Conference on Neural Information
-  Processing Systems}
-    \field{title}{{AgentDojo}: A Dynamic Environment to Evaluate Attacks and
-  Defenses for {LLM} Agents}
+    \field{booktitle}{The Thirty-eighth Annual Conference on Neural Information Processing Systems}
+    \field{title}{{AgentDojo}: A Dynamic Environment to Evaluate Attacks and Defenses for {LLM} Agents}
     \verb{url}
     \verb https://arxiv.org/abs/2406.13352
     \endverb
@@ -502,11 +496,9 @@
     \strng{fullhash}{LMLYGNGMMALOSVZL1}
     \field{labelnamesource}{author}
     \field{labeltitlesource}{title}
-    \field{booktitle}{Proceedings of the 58th Annual Meeting of the Association
-  for Computational Linguistics}
+    \field{booktitle}{Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics}
     \field{pages}{7871\bibrangedash 7880}
-    \field{title}{{BART}: Denoising Sequence-to-Sequence Pre-training for
-  Natural Language Generation, Translation, and Comprehension}
+    \field{title}{{BART}: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension}
     \field{year}{2020}
   \endentry
 
@@ -529,8 +521,7 @@
     \strng{fullhash}{CSKK1}
     \field{labelnamesource}{author}
     \field{labeltitlesource}{title}
-    \field{booktitle}{Proceedings of the 51st Annual Meeting of the Association
-  for Computational Linguistics (Volume 2: Short Papers)}
+    \field{booktitle}{Proceedings of the 51st Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers)}
     \field{pages}{748\bibrangedash 752}
     \field{title}{Smatch: an Evaluation Metric for Semantic Feature Structures}
     \field{year}{2013}

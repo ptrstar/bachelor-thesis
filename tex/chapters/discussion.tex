@@ -4,15 +4,16 @@
 \section{What the Approach Gets Right}
 \label{sec:disc-capabilities}
 
-The central result is that a concise five-sentence policy is sufficient to detect a
-substantial fraction of injection attacks with zero false positives on benign tasks.
+The central result is that a concise five-sentence policy is sufficient to detect 70\%
+of injection attacks directly at the firewall, raising the combined system stop rate
+to 97\%, with a false-positive rate of 3\% on benign tasks.
 This is a meaningful baseline: a system administrator can write the policy in under a
 minute, and the firewall will enforce it without human review of individual inputs.
 
 AMR's role is to make the policy enforcement robust to surface variation.
-The attacker cannot evade Rule 1 by rephrasing ``send'' with different words, because
-the parser maps many surface forms to the same predicate.
-They cannot evade Rule 2+4 by using synonymous predicates, because the LLM classifier
+The attacker cannot evade the firewall by rephrasing ``send'' with different words,
+because the parser maps many surface forms to the same predicate.
+They cannot evade it by using synonymous predicates, because the LLM classifier
 recognises synonymy at the concept level.
 The category B results confirm this: ``wire'', ``remit'', and ``disburse'' are all
 caught because the classifier correctly identifies them as synonyms of ``send''.
@@ -24,7 +25,7 @@ Benign money transfers and password changes requested by the user are not blocke
 This means the firewall adds security without requiring the policy to be more restrictive
 than the user's actual needs.
 
-The LLM sub-calls in Rule 2+4 are both useful and safe.
+The LLM sub-calls used for synonym and antonym classification are both useful and safe.
 They are useful because they extend the detection class beyond exact predicate matches.
 They are safe because the attacker controls only one of the two words passed to the
 classifier, and a single word is not a meaningful attack surface.

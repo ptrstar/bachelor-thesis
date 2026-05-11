@@ -5,9 +5,9 @@ This thesis asked whether AMR-based static analysis can detect prompt injection 
 in LLM agents.
 The answer is yes, within a well-defined scope.
 
-A concise five-sentence policy, encoded as AMR prohibition trees, is sufficient to
-detect a substantial fraction of injection attacks on the AgentDojo banking benchmark
-with zero false positives.
+A concise five-sentence policy, encoded as AMR prohibition trees, directly detects
+70\% of injection attacks on the AgentDojo banking benchmark, raising the combined
+system stop rate to 97\%, with a false-positive rate of 3\% (one task out of 31).
 The key enabler is AMR's lossy compression property: surface variation is absorbed by
 the parser, and the forbidden predicate survives in a form the static rules can match.
 A minimal addition of LLM calls, scoped to single-concept synonym classification,
@@ -25,9 +25,9 @@ Section~\ref{sec:disc-abstraction}.
 These limits do not diminish the result.
 A detector that is honest about what it can and cannot do is more trustworthy than one
 that claims broad coverage it cannot justify.
-The evaluation shows that Rule1+24 provides reliable, high-precision detection for the
-attacks in its scope, and the scope is well-matched to the most common direct injection
-techniques.
+The evaluation shows that the firewall provides reliable, high-precision detection for
+the attacks in its scope, and the scope is well-matched to the most common direct
+injection techniques.
 
 The broader implication is that semantic graph representations are a viable layer in
 the LLM agent security stack.

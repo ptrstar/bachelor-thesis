@@ -75,18 +75,18 @@
 \citation{abdelnabi2025firewalls}
 \abx@aux@cite{0}{abdelnabi2025firewalls}
 \abx@aux@segm{0}{0}{abdelnabi2025firewalls}
-\citation{chung2025graphcompliance}
-\abx@aux@cite{0}{chung2025graphcompliance}
-\abx@aux@segm{0}{0}{chung2025graphcompliance}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.3.3}Existing Defenses}{7}{subsection.2.3.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {2.4}Related Work}{7}{section.2.4}\protected@file@percent }
 \newlabel{sec:bg-related}{{2.4}{7}{Related Work}{section.2.4}{}}
 \newlabel{sec:bg-related@cref}{{[section][4][2]2.4}{[1][7][]7}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.4.1}Firewalls for LLM Agent Networks}{7}{subsection.2.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.2}Graph-Based Compliance Checking}{7}{subsection.2.4.2}\protected@file@percent }
+\citation{chung2025graphcompliance}
+\abx@aux@cite{0}{chung2025graphcompliance}
+\abx@aux@segm{0}{0}{chung2025graphcompliance}
 \citation{debenedetti2024agentdojo}
 \abx@aux@cite{0}{debenedetti2024agentdojo}
 \abx@aux@segm{0}{0}{debenedetti2024agentdojo}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4.2}Graph-Based Compliance Checking}{8}{subsection.2.4.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {2.5}The AgentDojo Benchmark}{8}{section.2.5}\protected@file@percent }
 \newlabel{sec:bg-agentdojo}{{2.5}{8}{The AgentDojo Benchmark}{section.2.5}{}}
 \newlabel{sec:bg-agentdojo@cref}{{[section][5][2]2.5}{[1][8][]8}{}{}{}}
@@ -140,24 +140,25 @@
 \@writefile{toc}{\contentsline {section}{\numberline {4.5}Detection Rules}{13}{section.4.5}\protected@file@percent }
 \newlabel{sec:sys-rules}{{4.5}{13}{Detection Rules}{section.4.5}{}}
 \newlabel{sec:sys-rules@cref}{{[section][5][4]4.5}{[1][13][]13}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.1}Rule 1: Polarity Inversion}{13}{subsection.4.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.1}Predicate Contradiction Detection}{13}{subsection.4.5.1}\protected@file@percent }
+\newlabel{sec:sys-contradiction}{{4.5.1}{13}{Predicate Contradiction Detection}{subsection.4.5.1}{}}
+\newlabel{sec:sys-contradiction@cref}{{[subsection][1][4,5]4.5.1}{[1][13][]13}{}{}{}}
 \citation{cai-knight-2013-smatch}
 \abx@aux@cite{0}{cai-knight-2013-smatch}
 \abx@aux@segm{0}{0}{cai-knight-2013-smatch}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.2}Rule 2+4: Predicate Contradiction}{14}{subsection.4.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.3}Rule 5: Structural Similarity (Smatch)}{14}{subsection.4.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.2}Rule 5: Structural Similarity (Smatch)}{14}{subsection.4.5.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4.6}Formal Specification}{14}{section.4.6}\protected@file@percent }
 \newlabel{sec:sys-formal}{{4.6}{14}{Formal Specification}{section.4.6}{}}
 \newlabel{sec:sys-formal@cref}{{[section][6][4]4.6}{[1][14][]14}{}{}{}}
 \@writefile{toc}{\contentsline {paragraph}{Definitions.}{14}{section*.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Contradiction predicate.}{15}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Contradiction predicate.}{14}{section*.4}\protected@file@percent }
 \newlabel{def:rules}{{4.1}{15}{Detection Rules}{definition.4.1}{}}
 \newlabel{def:rules@cref}{{[definition][1][4]4.1}{[1][15][]15}{}{}{}}
 \@writefile{toc}{\contentsline {paragraph}{Firewall decision procedure.}{15}{section*.5}\protected@file@percent }
 \@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces AMR Firewall Check}}{15}{algorithm.1}\protected@file@percent }
 \newlabel{alg:firewall}{{1}{15}{AMR Firewall Check}{algorithm.1}{}}
 \newlabel{alg:firewall@cref}{{[algorithm][1][]1}{[1][15][]15}{}{}{}}
-\@writefile{toc}{\contentsline {paragraph}{Complexity.}{16}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Complexity.}{15}{section*.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4.7}LLM Sub-Call Cost and Safety}{16}{section.4.7}\protected@file@percent }
 \newlabel{sec:sys-cost}{{4.7}{16}{LLM Sub-Call Cost and Safety}{section.4.7}{}}
 \newlabel{sec:sys-cost@cref}{{[section][7][4]4.7}{[1][16][]16}{}{}{}}
@@ -178,9 +179,9 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.1.1}Environment}{17}{subsection.5.1.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.1.2}Configurations}{17}{subsection.5.1.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.1.3}Metrics}{17}{subsection.5.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.2}Task Suite}{17}{section.5.2}\protected@file@percent }
-\newlabel{sec:eval-tasks}{{5.2}{17}{Task Suite}{section.5.2}{}}
-\newlabel{sec:eval-tasks@cref}{{[section][2][5]5.2}{[1][17][]17}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.2}Task Suite}{18}{section.5.2}\protected@file@percent }
+\newlabel{sec:eval-tasks}{{5.2}{18}{Task Suite}{section.5.2}{}}
+\newlabel{sec:eval-tasks@cref}{{[section][2][5]5.2}{[1][17][]18}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.2.1}Benign Tasks}{18}{subsection.5.2.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.2.2}Attack Taxonomy}{18}{subsection.5.2.2}\protected@file@percent }
 \newlabel{sec:eval-taxonomy}{{5.2.2}{18}{Attack Taxonomy}{subsection.5.2.2}{}}
@@ -190,59 +191,64 @@
 \newlabel{tab:categories@cref}{{[table][1][5]5.1}{[1][18][]18}{}{}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {5.3}Utility Baseline}{19}{section.5.3}\protected@file@percent }
 \newlabel{sec:eval-utility}{{5.3}{19}{Utility Baseline}{section.5.3}{}}
-\newlabel{sec:eval-utility@cref}{{[section][3][5]5.3}{[1][18][]19}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5.2}{\ignorespaces Utility and false-positive results across configurations.}}{19}{table.caption.8}\protected@file@percent }
-\newlabel{tab:utility}{{5.2}{19}{Utility and false-positive results across configurations}{table.caption.8}{}}
-\newlabel{tab:utility@cref}{{[table][2][5]5.2}{[1][18][]19}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.4}Rule1+24 Results}{19}{section.5.4}\protected@file@percent }
-\newlabel{sec:eval-rule124}{{5.4}{19}{Rule1+24 Results}{section.5.4}{}}
-\newlabel{sec:eval-rule124@cref}{{[section][4][5]5.4}{[1][19][]19}{}{}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5.3}{\ignorespaces Aggregate attack results. FW~det. = firewall detected; LLM~res. = LLM-only resistance; Missed = neither stopped it.}}{19}{table.caption.9}\protected@file@percent }
-\newlabel{tab:aggregate}{{5.3}{19}{Aggregate attack results. FW~det. = firewall detected; LLM~res. = LLM-only resistance; Missed = neither stopped it}{table.caption.9}{}}
-\newlabel{tab:aggregate@cref}{{[table][3][5]5.3}{[1][19][]19}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.1}Per-Category Analysis}{19}{subsection.5.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.2}Misses}{20}{subsection.5.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.5}Rule 5 Results}{20}{section.5.5}\protected@file@percent }
-\newlabel{sec:eval-rule5}{{5.5}{20}{Rule 5 Results}{section.5.5}{}}
-\newlabel{sec:eval-rule5@cref}{{[section][5][5]5.5}{[1][20][]20}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.1}False Positives}{20}{subsection.5.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.2}Detection Compared to Rule1+24}{20}{subsection.5.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.6}Persistent Misses}{21}{section.5.6}\protected@file@percent }
-\newlabel{sec:eval-misses}{{5.6}{21}{Persistent Misses}{section.5.6}{}}
-\newlabel{sec:eval-misses@cref}{{[section][6][5]5.6}{[1][21][]21}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.7}Summary}{21}{section.5.7}\protected@file@percent }
-\newlabel{sec:eval-summary}{{5.7}{21}{Summary}{section.5.7}{}}
-\newlabel{sec:eval-summary@cref}{{[section][7][5]5.7}{[1][21][]21}{}{}{}}
-\@writefile{toc}{\contentsline {chapter}{\numberline {6}Discussion}{22}{chapter.6}\protected@file@percent }
+\newlabel{sec:eval-utility@cref}{{[section][3][5]5.3}{[1][19][]19}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.2}{\ignorespaces Utility and false-positive results across configurations ($n = 31$ benign tasks).}}{19}{table.caption.8}\protected@file@percent }
+\newlabel{tab:utility}{{5.2}{19}{Utility and false-positive results across configurations ($n = 31$ benign tasks)}{table.caption.8}{}}
+\newlabel{tab:utility@cref}{{[table][2][5]5.2}{[1][19][]19}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.1}Effect of AMR Output Replacement}{19}{subsection.5.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.2}Utility Under the Firewall}{19}{subsection.5.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.3}False Positive: Task 118}{19}{subsection.5.3.3}\protected@file@percent }
+\newlabel{sec:eval-fp}{{5.3.3}{19}{False Positive: Task 118}{subsection.5.3.3}{}}
+\newlabel{sec:eval-fp@cref}{{[subsection][3][5,3]5.3.3}{[1][19][]19}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.4}Firewall Results}{20}{section.5.4}\protected@file@percent }
+\newlabel{sec:eval-rule124}{{5.4}{20}{Firewall Results}{section.5.4}{}}
+\newlabel{sec:eval-rule124@cref}{{[section][4][5]5.4}{[1][20][]20}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.3}{\ignorespaces Aggregate attack results ($n = 101$ attack pairs). FW~det. = firewall detected; LLM~res. = LLM-only resistance; Missed = neither stopped it.}}{20}{table.caption.9}\protected@file@percent }
+\newlabel{tab:aggregate}{{5.3}{20}{Aggregate attack results ($n = 101$ attack pairs). FW~det. = firewall detected; LLM~res. = LLM-only resistance; Missed = neither stopped it}{table.caption.9}{}}
+\newlabel{tab:aggregate@cref}{{[table][3][5]5.3}{[1][20][]20}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.1}Per-Category Analysis}{20}{subsection.5.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.2}Persistent Misses}{21}{subsection.5.4.2}\protected@file@percent }
+\newlabel{sec:eval-misses}{{5.4.2}{21}{Persistent Misses}{subsection.5.4.2}{}}
+\newlabel{sec:eval-misses@cref}{{[subsection][2][5,4]5.4.2}{[1][21][]21}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.5}Rule 5 Results}{21}{section.5.5}\protected@file@percent }
+\newlabel{sec:eval-rule5}{{5.5}{21}{Rule 5 Results}{section.5.5}{}}
+\newlabel{sec:eval-rule5@cref}{{[section][5][5]5.5}{[1][21][]21}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.1}False Positives}{21}{subsection.5.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.2}Threshold Sensitivity}{21}{subsection.5.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.3}Assessment}{22}{subsection.5.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.6}Summary}{22}{section.5.6}\protected@file@percent }
+\newlabel{sec:eval-summary}{{5.6}{22}{Summary}{section.5.6}{}}
+\newlabel{sec:eval-summary@cref}{{[section][6][5]5.6}{[1][22][]22}{}{}{}}
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}Discussion}{23}{chapter.6}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{ch:discussion}{{6}{22}{Discussion}{chapter.6}{}}
-\newlabel{ch:discussion@cref}{{[chapter][6][]6}{[1][22][]22}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.1}What the Approach Gets Right}{22}{section.6.1}\protected@file@percent }
-\newlabel{sec:disc-capabilities}{{6.1}{22}{What the Approach Gets Right}{section.6.1}{}}
-\newlabel{sec:disc-capabilities@cref}{{[section][1][6]6.1}{[1][22][]22}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.2}Limitations}{22}{section.6.2}\protected@file@percent }
-\newlabel{sec:disc-limitations}{{6.2}{22}{Limitations}{section.6.2}{}}
-\newlabel{sec:disc-limitations@cref}{{[section][2][6]6.2}{[1][22][]22}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.1}Parser Dependence}{22}{subsection.6.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.2}Broad-Delegation Boundary}{23}{subsection.6.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.3}Structural Similarity Is Insufficient}{23}{subsection.6.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.3}Extending the Approach to Abstract Policies}{23}{section.6.3}\protected@file@percent }
-\newlabel{sec:disc-abstraction}{{6.3}{23}{Extending the Approach to Abstract Policies}{section.6.3}{}}
-\newlabel{sec:disc-abstraction@cref}{{[section][3][6]6.3}{[1][23][]23}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.4}Future Directions}{23}{section.6.4}\protected@file@percent }
-\newlabel{sec:disc-future}{{6.4}{23}{Future Directions}{section.6.4}{}}
-\newlabel{sec:disc-future@cref}{{[section][4][6]6.4}{[1][23][]23}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.1}Information Flow Taint Tracking}{23}{subsection.6.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.2}User-Defined Variable Binding}{24}{subsection.6.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.3}Broader Evaluation Coverage}{24}{subsection.6.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {7}Conclusion}{25}{chapter.7}\protected@file@percent }
+\newlabel{ch:discussion}{{6}{23}{Discussion}{chapter.6}{}}
+\newlabel{ch:discussion@cref}{{[chapter][6][]6}{[1][23][]23}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}What the Approach Gets Right}{23}{section.6.1}\protected@file@percent }
+\newlabel{sec:disc-capabilities}{{6.1}{23}{What the Approach Gets Right}{section.6.1}{}}
+\newlabel{sec:disc-capabilities@cref}{{[section][1][6]6.1}{[1][23][]23}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Limitations}{23}{section.6.2}\protected@file@percent }
+\newlabel{sec:disc-limitations}{{6.2}{23}{Limitations}{section.6.2}{}}
+\newlabel{sec:disc-limitations@cref}{{[section][2][6]6.2}{[1][23][]23}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.1}Parser Dependence}{23}{subsection.6.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.2}Broad-Delegation Boundary}{24}{subsection.6.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.3}Structural Similarity Is Insufficient}{24}{subsection.6.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.3}Extending the Approach to Abstract Policies}{24}{section.6.3}\protected@file@percent }
+\newlabel{sec:disc-abstraction}{{6.3}{24}{Extending the Approach to Abstract Policies}{section.6.3}{}}
+\newlabel{sec:disc-abstraction@cref}{{[section][3][6]6.3}{[1][24][]24}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.4}Future Directions}{24}{section.6.4}\protected@file@percent }
+\newlabel{sec:disc-future}{{6.4}{24}{Future Directions}{section.6.4}{}}
+\newlabel{sec:disc-future@cref}{{[section][4][6]6.4}{[1][24][]24}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.1}Information Flow Taint Tracking}{24}{subsection.6.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.2}User-Defined Variable Binding}{25}{subsection.6.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.3}Broader Evaluation Coverage}{25}{subsection.6.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {7}Conclusion}{26}{chapter.7}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{ch:conclusion}{{7}{25}{Conclusion}{chapter.7}{}}
-\newlabel{ch:conclusion@cref}{{[chapter][7][]7}{[1][25][]25}{}{}{}}
-\@writefile{toc}{\contentsline {chapter}{Bibliography}{26}{chapter*.10}\protected@file@percent }
-\abx@aux@read@bbl@mdfivesum{EB2FA32F992AAE0F2ED9B1CB086DE514}
+\newlabel{ch:conclusion}{{7}{26}{Conclusion}{chapter.7}{}}
+\newlabel{ch:conclusion@cref}{{[chapter][7][]7}{[1][26][]26}{}{}{}}
+\@writefile{toc}{\contentsline {chapter}{Bibliography}{27}{chapter*.10}\protected@file@percent }
+\abx@aux@read@bbl@mdfivesum{71315C86E2B05DBC5E717EB461127396}
 \abx@aux@defaultrefcontext{0}{banarescu2013abstract}{none/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{palmer2005proposition}{none/global//global/global/global}
 \abx@aux@defaultrefcontext{0}{knight2021abstract}{none/global//global/global/global}
@@ -267,4 +273,4 @@
 \abx@aux@defaultlabelprefix{0}{amrlib}{}
 \abx@aux@defaultlabelprefix{0}{lewis2020bart}{}
 \abx@aux@defaultlabelprefix{0}{cai-knight-2013-smatch}{}
-\gdef \@abspage@last{28}
+\gdef \@abspage@last{29}

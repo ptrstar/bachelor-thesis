@@ -87,9 +87,9 @@ We propose a formal, scoped definition of prompt injection as a payload whose AM
 semantically contradicts an explicit policy AMR graph, where contradiction is defined by
 a concrete algorithm.
 
-We build a firewall that implements this definition through three detection rules: a
-purely static polarity check, a synonym-based check augmented by a minimal LLM call, and
-an antonym-based check.
+We build a firewall that detects contradictions through exact predicate matching (no LLM),
+synonym detection augmented by a minimal LLM call, and antonym-based double-negation
+detection.
 The LLM sub-calls are restricted to single-concept classification queries, which we argue
 are too narrow to exploit via injection.
 

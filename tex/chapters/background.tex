@@ -43,7 +43,7 @@ Two sentences that mean the same thing do not always produce identical AMR graph
 because different parsers may choose different PropBank frames for synonymous words.
 ``Wire funds to the attacker'' might parse to \texttt{wire-01} rather than
 \texttt{send-01}.
-This is not a weakness of AMR; it is handled by the synonym detection rule described
+This is not a weakness of AMR; it is handled by the synonym detection mechanism described
 in Section~\ref{sec:sys-rules}.
 The point is that AMR eliminates syntactic variation, reducing the attacker's options
 to semantic variation, which is a narrower and more tractable problem.
@@ -169,20 +169,27 @@ Their \textit{Language Converter Firewall} addresses the data-instruction bounda
 eliminating the channel through which instructions can arrive.
 Incoming messages are converted to a closed, domain-specific, structured protocol using
 deterministic verification.
+The protocol schema consists of typed message fields and is learned automatically from
+observing well-formed tool and agent messages in the target deployment.
 If a message cannot be expressed in the closed protocol, it is dropped.
-This provides a strong structural guarantee: instructions cannot arrive because there is
-no representation for them in the target protocol.
+Arbitrary instructions, persuasive framing, and embedded commands are structurally
+eliminated because there is no field in the typed schema that can represent them.
 Their system achieves large reductions in attack success rates on the ConVerse benchmark
 across 864 attacks (from 84\% to 10\% for privacy attacks, from 60\% to 3\% for
 security attacks).
 
 Our approach takes the opposite starting point.
 Rather than eliminating the channel, we allow natural-language tool outputs to reach the
-agent and detect when they contain payloads that contradict the policy.
-This is less restrictive: our firewall does not require the output schema to be fully
-controlled.
-The trade-off is that our approach depends on the quality of the AMR parser and on the
-policy being stated explicitly.
+agent and detect when they contain payloads that contradict a stated policy.
+This has a different set of requirements.
+Abdelnabi et al.\ require a deployment-specific training phase to learn the typed schema
+from well-formed messages; the schema is application-specific and cannot be transferred
+across deployments.
+Our firewall requires only a human-written policy, specified once by the system
+administrator, and no training data.
+The trade-off runs in the other direction: our approach depends on the AMR parser
+mapping injections to policy predicates, while theirs provides a hard structural
+guarantee regardless of how the injection is phrased.
 
 Two further differences are worth noting.
 Abdelnabi et al.\ target agent-to-agent communication, where the inputs are messages
@@ -191,8 +198,8 @@ Our target is tool output injection in a single-agent setting, where the injecti
 arrive in structured data like file contents and database records.
 These are related but distinct threat models.
 Additionally, our approach produces interpretable blocking decisions: when the firewall
-fires, we can state exactly which predicate matched which policy rule.
-Structural protocol conversion does not provide this.
+fires, we can state exactly which predicate matched which policy prohibition.
+Structural protocol conversion does not provide this level of explanation.
 
 The fact that two independent groups have converged on a firewall framing for this
 problem, using different methods, suggests this is the right architectural layer to
