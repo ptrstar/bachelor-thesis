@@ -18,6 +18,8 @@
 
 % ── Mathematics ───────────────────────────────────────────────────────────────
 \usepackage{amsmath, amssymb}
+\usepackage{amsthm}
+\newtheorem{definition}{Definition}[chapter]
 
 % ── Graphics & figures ────────────────────────────────────────────────────────
 \usepackage{graphicx}
@@ -29,6 +31,10 @@
 % ── Tables ────────────────────────────────────────────────────────────────────
 \usepackage{booktabs}
 \usepackage{tabularx}
+
+% ── Algorithms ────────────────────────────────────────────────────────────────
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
 % ── Code & AMR listings ───────────────────────────────────────────────────────
 \usepackage{listings}
@@ -45,7 +51,7 @@
 \usepackage[dvipsnames]{xcolor}
 
 % ── Bibliography ──────────────────────────────────────────────────────────────
-\usepackage[backend=biber, style=numeric, sorting=none]{biblatex}
+\usepackage[backend=bibtex, style=numeric, sorting=none]{biblatex}
 \addbibresource{references.bib}
 
 % ── Hyperlinks (load last) ────────────────────────────────────────────────────
@@ -67,7 +73,7 @@
 }
 \author{
   Janosch Moor \\[0.3em]
-  \small Supervised by Prof.\ Srdjan Čapkun \& Dr.\ James Chiang \\
+  \small Supervised by Prof.\ Srdjan Čapkun \& Dr.\ James Chiang \ \& Daniele Coppola \\
   \small moorja@student.ethz.ch
 }
 \date{2026}

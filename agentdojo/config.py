@@ -29,13 +29,13 @@ USE_PREPARSED_AMR_POLICY: bool = True
 # When True: replace raw tool output in the message history with its parsed AMR
 # before the agent LLM sees it. The LLM receives Penman notation instead of the
 # original YAML/text, so injection payloads cannot reach the LLM as raw strings.
-AMR_REPLACE_OUTPUTS: bool = True
+AMR_REPLACE_OUTPUTS: bool = False
 
 # Active detection rules. Options: "rule1", "rule24", "rule5".
 #   "rule1"  — same predicate, opposite polarity (no LLM)
 #   "rule24" — different predicates (synonym/antonym) + polarity logic (LLM calls)
 #   "rule5"  — smatch recall against policy templates (no LLM calls)
-ACTIVE_RULES: list[str] = ["rule1", "rule24"]
+ACTIVE_RULES: list[str] = []
 
 # Minimum smatch recall (best_match / gold_triples) for Rule 5 to flag a violation.
 RULE5_THRESHOLD: float = 0.35

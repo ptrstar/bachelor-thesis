@@ -185,12 +185,23 @@ class UserInputContextInit(BasePipelineElement):
     tool-output parser later knows why the tool was called.
 
     Stores the resulting ExecutionContext in extra_args["_exec_ctx"].
+
+    When both active_rules is empty and amr_replace_outputs is False, all AMR
+    parsing is a no-op and every LLM call here is skipped entirely.
     """
     name = "user_input_context_init"
 
-    def __init__(self, client: openai.OpenAI, verbose: bool = False) -> None:
+    def __init__(
+        self,
+        client: openai.OpenAI,
+        verbose: bool = False,
+        active_rules: list | None = None,
+        amr_replace_outputs: bool = False,
+    ) -> None:
         self.client = client
         self.verbose = verbose
+        self.active_rules = active_rules if active_rules is not None else ["rule1", "rule24"]
+        self.amr_replace_outputs = amr_replace_outputs
 
     def query(
         self,
@@ -201,6 +212,13 @@ class UserInputContextInit(BasePipelineElement):
         extra_args: dict = {},
     ) -> tuple[str, FunctionsRuntime, Env, Sequence[ChatMessage], dict]:
         ctx = ExecutionContext()
+
+        # Skip all LLM parsing when the firewall is inactive and outputs are not
+        # being replaced — there is nothing to feed the parsed AMR to.
+        if not self.active_rules and not self.amr_replace_outputs:
+            if self.verbose:
+                print(f"\n  {_YELLOW}{_BOLD}▶ CTX-INIT{_RESET} skipped (no active rules, AMR replace off)")
+            return query, runtime, env, messages, {**extra_args, "_exec_ctx": ctx}
 
         user_msg = next((m for m in messages if m["role"] == "user"), None)
         if user_msg is not None:
@@ -299,6 +317,12 @@ class AMRToolOutputFirewall(_AMRFirewallBase):
             if ctx is None:
                 # No execution context — fall back to stateless check
                 self._check_text("tool_output", text, env, list(messages))
+                continue
+
+            # ── Skip AMR parsing when nothing will consume it ──────────────
+            if not self.active_rules and not self.amr_replace_outputs:
+                if self.verbose:
+                    print(f"       {_GRAY}↳ skipped (no active rules, AMR replace off){_RESET}")
                 continue
 
             # ── Context-aware path ─────────────────────────────────────────

@@ -1,0 +1,539 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\datalist[entry]{none/global//global/global/global}
+  \entry{banarescu2013abstract}{inproceedings}{}{}
+    \name{author}{10}{}{%
+      {{hash=BL}{%
+         family={Banarescu},
+         familyi={B\bibinitperiod},
+         given={Laura},
+         giveni={L\bibinitperiod},
+      }}%
+      {{hash=BC}{%
+         family={Bonial},
+         familyi={B\bibinitperiod},
+         given={Claire},
+         giveni={C\bibinitperiod},
+      }}%
+      {{hash=CS}{%
+         family={Cai},
+         familyi={C\bibinitperiod},
+         given={Shu},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=GM}{%
+         family={Georgescu},
+         familyi={G\bibinitperiod},
+         given={Madalina},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=GK}{%
+         family={Griffitt},
+         familyi={G\bibinitperiod},
+         given={Kira},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=HU}{%
+         family={Hermjakob},
+         familyi={H\bibinitperiod},
+         given={Ulf},
+         giveni={U\bibinitperiod},
+      }}%
+      {{hash=KK}{%
+         family={Knight},
+         familyi={K\bibinitperiod},
+         given={Kevin},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=KP}{%
+         family={Koehn},
+         familyi={K\bibinitperiod},
+         given={Philipp},
+         giveni={P\bibinitperiod},
+      }}%
+      {{hash=PM}{%
+         family={Palmer},
+         familyi={P\bibinitperiod},
+         given={Martha},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=SN}{%
+         family={Schneider},
+         familyi={S\bibinitperiod},
+         given={Nathan},
+         giveni={N\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{BL+1}
+    \strng{fullhash}{BLBCCSGMGKHUKKKPPMSN1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{booktitle}{Proceedings of the 7th Linguistic Annotation Workshop and
+  Interoperability with Discourse}
+    \field{pages}{178\bibrangedash 186}
+    \field{title}{Abstract Meaning Representation for Sembanking}
+    \field{year}{2013}
+  \endentry
+
+  \entry{palmer2005proposition}{article}{}{}
+    \name{author}{3}{}{%
+      {{hash=PM}{%
+         family={Palmer},
+         familyi={P\bibinitperiod},
+         given={Martha},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=GD}{%
+         family={Gildea},
+         familyi={G\bibinitperiod},
+         given={Daniel},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=KP}{%
+         family={Kingsbury},
+         familyi={K\bibinitperiod},
+         given={Paul},
+         giveni={P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{PMGDKP1}
+    \strng{fullhash}{PMGDKP1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{number}{1}
+    \field{pages}{71\bibrangedash 106}
+    \field{title}{The Proposition Bank: An Annotated Corpus of Semantic Roles}
+    \field{volume}{31}
+    \field{journaltitle}{Computational Linguistics}
+    \field{year}{2005}
+  \endentry
+
+  \entry{knight2021abstract}{report}{}{}
+    \name{author}{9}{}{%
+      {{hash=KK}{%
+         family={Knight},
+         familyi={K\bibinitperiod},
+         given={Kevin},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=BL}{%
+         family={Banarescu},
+         familyi={B\bibinitperiod},
+         given={Laura},
+         giveni={L\bibinitperiod},
+      }}%
+      {{hash=BC}{%
+         family={Bonial},
+         familyi={B\bibinitperiod},
+         given={Claire},
+         giveni={C\bibinitperiod},
+      }}%
+      {{hash=GM}{%
+         family={Georgescu},
+         familyi={G\bibinitperiod},
+         given={Madalina},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=GK}{%
+         family={Griffitt},
+         familyi={G\bibinitperiod},
+         given={Kira},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=HU}{%
+         family={Hermjakob},
+         familyi={H\bibinitperiod},
+         given={Ulf},
+         giveni={U\bibinitperiod},
+      }}%
+      {{hash=MD}{%
+         family={Marcu},
+         familyi={M\bibinitperiod},
+         given={Daniel},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=PM}{%
+         family={Palmer},
+         familyi={P\bibinitperiod},
+         given={Martha},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=SN}{%
+         family={Schneider},
+         familyi={S\bibinitperiod},
+         given={Nathan},
+         giveni={N\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{KK+1}
+    \strng{fullhash}{KKBLBCGMGKHUMDPMSN1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{title}{Abstract Meaning Representation (AMR) Annotation Release 3.0}
+    \list{institution}{1}{%
+      {Linguistic Data Consortium}%
+    }
+    \field{type}{techreport}
+    \field{year}{2021}
+  \endentry
+
+  \entry{matthiessen1991text}{article}{}{}
+    \name{author}{2}{}{%
+      {{hash=MC}{%
+         family={Matthiessen},
+         familyi={M\bibinitperiod},
+         given={Christian},
+         giveni={C\bibinitperiod},
+      }}%
+      {{hash=BJA}{%
+         family={Bateman},
+         familyi={B\bibinitperiod},
+         given={John\bibnamedelima A.},
+         giveni={J\bibinitperiod\bibinitdelim A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{MCBJA1}
+    \strng{fullhash}{MCBJA1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{note}{PENMAN notation originates from the Penman project at ISI/USC}
+    \field{title}{Text Generation as Choice in a Multidimensional Meaning
+  Space}
+    \field{year}{1991}
+  \endentry
+
+  \entry{abend2013ucca}{inproceedings}{}{}
+    \name{author}{2}{}{%
+      {{hash=AO}{%
+         family={Abend},
+         familyi={A\bibinitperiod},
+         given={Omri},
+         giveni={O\bibinitperiod},
+      }}%
+      {{hash=RA}{%
+         family={Rappoport},
+         familyi={R\bibinitperiod},
+         given={Ari},
+         giveni={A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{AORA1}
+    \strng{fullhash}{AORA1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{booktitle}{Proceedings of the 51st Annual Meeting of the Association
+  for Computational Linguistics (Volume 1: Long Papers)}
+    \field{pages}{228\bibrangedash 238}
+    \field{title}{Universal Conceptual Cognitive Annotation (UCCA)}
+    \verb{url}
+    \verb https://aclanthology.org/P13-1023/
+    \endverb
+    \field{year}{2013}
+  \endentry
+
+  \entry{chung2025graphcompliance}{misc}{}{}
+    \name{author}{7}{}{%
+      {{hash=CJ}{%
+         family={Chung},
+         familyi={C\bibinitperiod},
+         given={Jiseong},
+         giveni={J\bibinitperiod},
+      }}%
+      {{hash=KR}{%
+         family={Ko},
+         familyi={K\bibinitperiod},
+         given={Ronny},
+         giveni={R\bibinitperiod},
+      }}%
+      {{hash=YW}{%
+         family={Yoo},
+         familyi={Y\bibinitperiod},
+         given={Wonchul},
+         giveni={W\bibinitperiod},
+      }}%
+      {{hash=OM}{%
+         family={Onizuka},
+         familyi={O\bibinitperiod},
+         given={Makoto},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=KS}{%
+         family={Kim},
+         familyi={K\bibinitperiod},
+         given={Sungmok},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=KTW}{%
+         family={Kim},
+         familyi={K\bibinitperiod},
+         given={Tae-Wan},
+         giveni={T\bibinithyphendelim W\bibinitperiod},
+      }}%
+      {{hash=SWY}{%
+         family={Shin},
+         familyi={S\bibinitperiod},
+         given={Won-Yong},
+         giveni={W\bibinithyphendelim Y\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{CJ+1}
+    \strng{fullhash}{CJKRYWOMKSKTWSWY1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{doi}
+    \verb 10.48550/arXiv.2510.26309
+    \endverb
+    \verb{eprint}
+    \verb 2510.26309
+    \endverb
+    \field{title}{GraphCompliance: Aligning Policy and Context Graphs for
+  LLM-Based Regulatory Compliance}
+    \verb{url}
+    \verb https://arxiv.org/abs/2510.26309
+    \endverb
+    \field{eprinttype}{arXiv}
+    \field{eprintclass}{cs.AI}
+    \field{year}{2025}
+  \endentry
+
+  \entry{owaspPromptInjection}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=O}{%
+         family={{OWASP Foundation}},
+         familyi={O\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{O1}
+    \strng{fullhash}{O1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+  \field{howpublished}{\url{https://owasp.org/www-community/attacks/PromptInjection}}
+    \field{note}{Accessed 2026-05-06}
+    \field{title}{Prompt Injection}
+    \field{year}{2026}
+  \endentry
+
+  \entry{abdelnabi2025firewalls}{misc}{}{}
+    \name{author}{5}{}{%
+      {{hash=AS}{%
+         family={Abdelnabi},
+         familyi={A\bibinitperiod},
+         given={Sahar},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=GA}{%
+         family={Gomaa},
+         familyi={G\bibinitperiod},
+         given={Amr},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=BE}{%
+         family={Bagdasarian},
+         familyi={B\bibinitperiod},
+         given={Eugene},
+         giveni={E\bibinitperiod},
+      }}%
+      {{hash=KPO}{%
+         family={Kristensson},
+         familyi={K\bibinitperiod},
+         given={Per\bibnamedelima Ola},
+         giveni={P\bibinitperiod\bibinitdelim O\bibinitperiod},
+      }}%
+      {{hash=SR}{%
+         family={Shokri},
+         familyi={S\bibinitperiod},
+         given={Reza},
+         giveni={R\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{AS+1}
+    \strng{fullhash}{ASGABEKPOSR1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \verb{eprint}
+    \verb 2502.01822
+    \endverb
+    \field{title}{Firewalls to Secure Dynamic {LLM} Agentic Networks}
+    \verb{url}
+    \verb https://arxiv.org/abs/2502.01822
+    \endverb
+    \field{eprinttype}{arXiv}
+    \field{eprintclass}{cs.CR}
+    \field{year}{2025}
+  \endentry
+
+  \entry{debenedetti2024agentdojo}{inproceedings}{}{}
+    \name{author}{6}{}{%
+      {{hash=DE}{%
+         family={Debenedetti},
+         familyi={D\bibinitperiod},
+         given={Edoardo},
+         giveni={E\bibinitperiod},
+      }}%
+      {{hash=ZJ}{%
+         family={Zhang},
+         familyi={Z\bibinitperiod},
+         given={Jie},
+         giveni={J\bibinitperiod},
+      }}%
+      {{hash=BM}{%
+         family={Balunovi\'{c}},
+         familyi={B\bibinitperiod},
+         given={Mislav},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=BKL}{%
+         family={Beurer-Kellner},
+         familyi={B\bibinithyphendelim K\bibinitperiod},
+         given={Luca},
+         giveni={L\bibinitperiod},
+      }}%
+      {{hash=FM}{%
+         family={Fischer},
+         familyi={F\bibinitperiod},
+         given={Marc},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=TF}{%
+         family={Tram\`{e}r},
+         familyi={T\bibinitperiod},
+         given={Florian},
+         giveni={F\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{DE+1}
+    \strng{fullhash}{DEZJBMBKLFMTF1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{booktitle}{The Thirty-eighth Annual Conference on Neural Information
+  Processing Systems}
+    \field{title}{{AgentDojo}: A Dynamic Environment to Evaluate Attacks and
+  Defenses for {LLM} Agents}
+    \verb{url}
+    \verb https://arxiv.org/abs/2406.13352
+    \endverb
+    \field{year}{2024}
+  \endentry
+
+  \entry{amrlib}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=B}{%
+         family={Bjascob},
+         familyi={B\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{B1}
+    \strng{fullhash}{B1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://github.com/bjascob/amrlib}}
+    \field{title}{amrlib: A Python Library for AMR}
+    \field{year}{2021}
+  \endentry
+
+  \entry{lewis2020bart}{inproceedings}{}{}
+    \name{author}{8}{}{%
+      {{hash=LM}{%
+         family={Lewis},
+         familyi={L\bibinitperiod},
+         given={Mike},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=LY}{%
+         family={Liu},
+         familyi={L\bibinitperiod},
+         given={Yinhan},
+         giveni={Y\bibinitperiod},
+      }}%
+      {{hash=GN}{%
+         family={Goyal},
+         familyi={G\bibinitperiod},
+         given={Naman},
+         giveni={N\bibinitperiod},
+      }}%
+      {{hash=GM}{%
+         family={Ghazvininejad},
+         familyi={G\bibinitperiod},
+         given={Marjan},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=MA}{%
+         family={Mohamed},
+         familyi={M\bibinitperiod},
+         given={Abdelrahman},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=LO}{%
+         family={Levy},
+         familyi={L\bibinitperiod},
+         given={Omer},
+         giveni={O\bibinitperiod},
+      }}%
+      {{hash=SV}{%
+         family={Stoyanov},
+         familyi={S\bibinitperiod},
+         given={Veselin},
+         giveni={V\bibinitperiod},
+      }}%
+      {{hash=ZL}{%
+         family={Zettlemoyer},
+         familyi={Z\bibinitperiod},
+         given={Luke},
+         giveni={L\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{LM+1}
+    \strng{fullhash}{LMLYGNGMMALOSVZL1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{booktitle}{Proceedings of the 58th Annual Meeting of the Association
+  for Computational Linguistics}
+    \field{pages}{7871\bibrangedash 7880}
+    \field{title}{{BART}: Denoising Sequence-to-Sequence Pre-training for
+  Natural Language Generation, Translation, and Comprehension}
+    \field{year}{2020}
+  \endentry
+
+  \entry{cai-knight-2013-smatch}{inproceedings}{}{}
+    \name{author}{2}{}{%
+      {{hash=CS}{%
+         family={Cai},
+         familyi={C\bibinitperiod},
+         given={Shu},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=KK}{%
+         family={Knight},
+         familyi={K\bibinitperiod},
+         given={Kevin},
+         giveni={K\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{CSKK1}
+    \strng{fullhash}{CSKK1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{booktitle}{Proceedings of the 51st Annual Meeting of the Association
+  for Computational Linguistics (Volume 2: Short Papers)}
+    \field{pages}{748\bibrangedash 752}
+    \field{title}{Smatch: an Evaluation Metric for Semantic Feature Structures}
+    \field{year}{2013}
+  \endentry
+\enddatalist
+\endinput

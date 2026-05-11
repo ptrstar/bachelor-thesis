@@ -53,6 +53,19 @@ extensively since its introduction~\cite{banarescu2013abstract,knight2021abstrac
 The Penman notation used in this thesis derives from the Penman project at
 ISI/USC~\cite{matthiessen1991text}.
 
+Other sentence-level semantic graph formalisms exist.
+Universal Conceptual Cognitive Annotation (UCCA) represents sentences as
+directed acyclic graphs over word spans rather than abstract
+concepts~\cite{abend2013ucca}.
+Unlike AMR, UCCA stays closer to the surface form: nodes correspond to
+portions of the original text rather than canonical PropBank frames.
+This makes UCCA more faithful to the input but also means it preserves
+more of the surface variation that AMR discards.
+For our purpose, canonical PropBank frames are precisely what we need:
+they give us a stable, parser-independent vocabulary of predicates that
+can be matched against a fixed policy without worrying about how the
+attacker chose to phrase the command.
+
 \section{AMR as a Security Primitive}
 \label{sec:bg-security}
 
@@ -123,8 +136,7 @@ The user may have written the task list, or the user may have said ``run tasks.t
 knowing it was written by someone else but trusting its contents.
 The data-instruction distinction collapses exactly in the cases where injections are
 most dangerous.
-We avoid this framing in our definition and instead focus on whether an action
-contradicts a stated policy.
+We return to this point in Chapter~\ref{ch:problem} when we define our scope.
 
 \subsection{Existing Defenses}
 
@@ -150,8 +162,8 @@ commands that do not involve the canary.
 
 Abdelnabi et al.\ propose a dual-firewall architecture for securing agent-to-agent
 communication networks~\cite{abdelnabi2025firewalls}.
-Their work is the closest in spirit to ours, and it is worth understanding the
-difference in approach.
+Their work is the closest in spirit to ours, and the difference in approach is
+instructive.
 
 Their \textit{Language Converter Firewall} addresses the data-instruction boundary by
 eliminating the channel through which instructions can arrive.
@@ -199,7 +211,7 @@ and we operate in real time rather than as a post-hoc audit.
 \label{sec:bg-agentdojo}
 
 AgentDojo is a framework for evaluating the security of LLM agents against task
-injection attacks~\cite{rogueSecurityPromptInjectionsBenchmark}.
+injection attacks~\cite{debenedetti2024agentdojo}.
 It provides a banking environment with a realistic set of tools: the agent can read
 files, query transactions, retrieve account information, send money, update passwords,
 and schedule payments.

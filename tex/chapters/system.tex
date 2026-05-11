@@ -251,6 +251,116 @@ A benign transaction record and an injection that says ``send money'' look the s
 to smatch.
 The evaluation results in Section~\ref{sec:eval-rule5} show this concretely.
 
+\section{Formal Specification}
+\label{sec:sys-formal}
+
+We now state the detection algorithm precisely.
+The following definitions consolidate the informal descriptions above.
+
+\paragraph{Definitions.}
+Let $G$ be an AMR graph represented as a set of triples
+$(v, r, u)$ where $v$ is the source node, $r$ is the relation label, and $u$ is the
+target (a node or a literal).
+Each node $n$ has a concept $c(n)$, a polarity $\pi(n) \in \{+, -\}$, an
+authorization flag $\alpha(n) \in \{\texttt{t}, \texttt{f}\}$, and a set of
+argument edges $A(n) = \{(r, u) \mid r \in \texttt{:ARG*}\}$.
+
+We write $\text{base}(c)$ for the PropBank frame base of concept $c$
+(\texttt{send-01} $\to$ \texttt{send}).
+
+Two argument sets $A_s$ and $A_u$ are \emph{compatible}, written
+$A_s \sim A_u$, if both are non-empty, the roles of the smaller set are a
+subset of the roles of the larger, and for every shared role $r$ the
+corresponding values satisfy a substring relation in either direction.
+
+The relation classifier $\rho(w_1, w_2)$ calls \texttt{gpt-4o-mini} with
+words $w_1$ and $w_2$ and returns
+$(\text{rel}, \text{score}) \in \{\texttt{synonym}, \texttt{antonym}, \texttt{none}\}
+\times [0, 100]$.
+A relation is accepted when $\text{score} \geq \theta_\rho = 50$.
+
+\paragraph{Contradiction predicate.}
+Let $s$ be a node from the policy graph $G_S$ and $u$ be a node from the
+tool output graph $G_U$.
+We say $s$ and $u$ are in \emph{contradiction}, written $s \bowtie u$, when
+all of the following hold:
+\begin{enumerate}
+  \item $A(s) \sim A(u)$ (argument compatibility),
+  \item $\alpha(u) = \texttt{f}$ (the user did not authorize this action), and
+  \item one of the three rules fires (Definition~\ref{def:rules}).
+\end{enumerate}
+
+\begin{definition}[Detection Rules]
+\label{def:rules}
+\hfill
+\begin{itemize}
+  \item \textbf{Rule 1} fires when
+        $c(s) = c(u)$
+        and $\pi(s) \neq \pi(u)$.
+  \item \textbf{Rule 4} fires when
+        $\text{base}(c(s)) \neq \text{base}(c(u))$,
+        $\rho(\text{base}(c(s)),\, \text{base}(c(u))) = (\texttt{synonym}, \cdot)$,
+        and $\pi(s) \neq \pi(u)$.
+  \item \textbf{Rule 2} fires when
+        $\text{base}(c(s)) \neq \text{base}(c(u))$,
+        $\rho(\text{base}(c(s)),\, \text{base}(c(u))) = (\texttt{antonym}, \cdot)$,
+        and $\pi(s) = \pi(u)$.
+\end{itemize}
+\end{definition}
+
+Rules 4 and 2 share a single LLM call per concept pair; the returned relation
+determines which rule (if any) applies.
+Rule 2 captures the double-negation case: if both the policy and the
+injection negate antonymous predicates, the two negations cancel and the
+injection asserts the prohibited action.
+
+\paragraph{Firewall decision procedure.}
+Algorithm~\ref{alg:firewall} states the full check performed on every tool
+output before the LLM processes it.
+
+\begin{algorithm}[h]
+\caption{AMR Firewall Check}
+\label{alg:firewall}
+\begin{algorithmic}[1]
+\Require Policy graph $G_S$, tool output text $t$, execution context $\mathcal{C}$
+\Ensure \textsc{Block} or \textsc{Pass}
+\State $G_U \gets \text{ParseAMR}(t, \mathcal{C}.\text{purpose})$
+\Comment{GPT-4o; purpose context sets $\alpha = \texttt{t}$ on authorized nodes}
+\State $\mathcal{C}.\text{addTrees}(G_U)$
+\State $V \gets \emptyset$
+\For{each prohibition node $s \in G_S$ with $\pi(s) = -$}
+  \For{each node $u \in G_U$ with $\alpha(u) = \texttt{f}$ and $A(s) \sim A(u)$}
+    \If{$s \bowtie u$}
+      \State $V \gets V \cup \{(s, u)\}$
+    \EndIf
+  \EndFor
+\EndFor
+\If{$V \neq \emptyset$}
+  \State \Return \textsc{Block} \Comment{abort agent pipeline}
+\Else
+  \State \Return \textsc{Pass}
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+
+The outer loop iterates over policy prohibition nodes; only nodes with
+$\pi(s) = -$ encode prohibitions.
+The inner loop iterates over tool output nodes that are not user-authorized
+and have compatible arguments.
+The authorization check ($\alpha(u) = \texttt{f}$) is the formal expression
+of the mechanism described in Section~\ref{sec:sys-auth}: nodes tagged
+\texttt{:auth t} by the parser are skipped.
+
+\paragraph{Complexity.}
+Let $|S|$ be the number of prohibition nodes in the policy and $|U|$ be the
+number of nodes in the tool output AMR.
+Rule 1 requires $O(|S| \cdot |U|)$ string comparisons.
+Rules 2 and 4 require at most $O(|S| \cdot |U|)$ LLM calls, but the argument
+compatibility filter reduces this to the number of pairs with matching
+argument roles, which is small in practice.
+For our banking policy ($|S| = 6$) and typical tool outputs ($|U| \leq 10$),
+the number of LLM calls per turn is at most a small constant.
+
 \section{LLM Sub-Call Cost and Safety}
 \label{sec:sys-cost}
 
