@@ -138,6 +138,19 @@ The data-instruction distinction collapses exactly in the cases where injections
 most dangerous.
 We return to this point in Chapter~\ref{ch:problem} when we define our scope.
 
+This thesis focuses specifically on \emph{instruction injection}: attacks where the
+adversarial payload asserts a forbidden action explicitly.
+A separate and complementary attack class is \emph{data injection}, where the attacker
+does not give a direct command but instead substitutes or taints a data value so that
+the agent's own legitimate computation produces the forbidden outcome.
+For example, an attacker who can overwrite the recipient IBAN in a scheduled payment
+record does not need to issue a ``send money'' command; the agent will read the modified
+record and execute the transfer on its own.
+Defending against data injection requires information-flow taint tracking, which operates
+outside the AMR abstraction layer.
+We discuss taint tracking as a complementary future direction in
+Section~\ref{sec:disc-future}.
+
 \subsection{Existing Defenses}
 
 Keyword and pattern filters maintain lists of known attack phrases.
@@ -147,7 +160,7 @@ any new phrasing defeats them.
 LLM-based judges pass the input to a second LLM and ask whether it is malicious.
 They are more flexible than keyword filters but share the same fundamental vulnerability:
 the judge processes the adversarial text, and a sufficiently clever injection can
-manipulate the judge itself.
+manipulate the judge itself~\cite{shi2024judgedeceiver}.
 There is no formal guarantee that the judge is immune to injection.
 
 Canary token approaches embed secret strings in the system prompt.

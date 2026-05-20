@@ -70,7 +70,7 @@ than the current mechanism supports.
 
 \subsection{Structural Similarity Is Insufficient}
 
-The Rule 5 evaluation demonstrates that graph structural similarity, by itself, is not
+The smatch evaluation demonstrates that graph structural similarity, by itself, is not
 a reliable basis for injection detection in the financial domain.
 The problem is concept-agnosticism: smatch cannot distinguish ``send money'' from
 ``record a money transfer'' because both have similar structural patterns.
@@ -89,8 +89,7 @@ Our evaluation uses a concrete policy: ``do not send money''.
 Real-world policies are often more abstract: ``do not give financial advice'', ``do not
 make commitments on behalf of the user''.
 
-Dr.\ James Chiang observed that the synonym evaluation approach should be extendable
-to this case.
+The synonym evaluation approach should be extendable to this case.
 Consider the policy ``do not give financial advice'' against an injection that causes
 the agent to say ``buy Tesla stock''.
 The injection's AMR root is \texttt{buy-01} with an imperative mode, which does not

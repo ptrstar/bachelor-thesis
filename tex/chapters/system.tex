@@ -30,13 +30,11 @@ pipeline.
 This is a conservative design: when in doubt, the firewall does nothing.
 Only outputs that clearly match a policy prohibition are blocked.
 
-We implement the firewall as an AgentDojo pipeline element (\texttt{AMRToolOutputFirewall}
-in \texttt{fw\_elements.py}).
-We also implement a pre-execution variant that checks tool calls before they are
-executed (\texttt{AMRToolCallFirewall}), but in our evaluation we use the post-execution
-variant.
-The post-execution variant is more general because it catches injections that the agent
-itself constructs by combining information from multiple tool outputs.
+We implement the firewall as an AgentDojo pipeline element in \texttt{fw\_elements.py}.
+We use the post-execution variant, which intercepts tool outputs after the tool has run
+but before the LLM processes them.
+This is the more general choice: it catches injections that the agent itself constructs
+by combining information from multiple tool outputs.
 
 \section{AMR Parsing}
 \label{sec:sys-parsing}
@@ -90,7 +88,7 @@ argument structures for the \texttt{send-01} predicate.
 
 In our evaluation we use a pre-parsed policy to avoid re-parsing costs and
 non-determinism across runs.
-The pre-parsed policy (\texttt{PREPARSED\_BANKING\_POLICY} in \texttt{config.py}) is:
+The pre-parsed representation of the banking policy is:
 
 \begin{lstlisting}
 (c / change-01
@@ -218,12 +216,13 @@ yields only pairs with compatible arguments, different base concepts, and at lea
 ARG edge each.
 Empty argument dicts are filtered out to avoid spurious matches on leaf nodes.
 
-\subsection{Rule 5: Structural Similarity (Smatch)}
+\subsection{Smatch-Based Detection}
+\label{sec:sys-smatch}
 
-Rule 5 is a structurally different approach that we explored and ultimately rejected as
-a primary mechanism.
-It uses smatch, an existing metric for comparing AMR graphs~\cite{cai-knight-2013-smatch}.
-We describe it here because the evaluation results motivate why it does not work.
+We also explored a structurally different approach using smatch, an existing metric
+for comparing AMR graphs~\cite{cai-knight-2013-smatch}.
+We ultimately rejected it as a primary mechanism; we describe it here because the
+analysis motivates why concept-sensitive matching is necessary.
 
 For each policy prohibition tree, we strip the \texttt{:polarity -} annotation to form
 a positive template.
@@ -242,7 +241,7 @@ policy template, because the structural features (\texttt{:ARG0}, \texttt{:ARG1}
 \texttt{\_\_system}, \texttt{money}) match regardless of the predicate.
 A benign transaction record and an injection that says ``send money'' look the same
 to smatch.
-The evaluation results in Section~\ref{sec:eval-rule5} show this concretely.
+The evaluation results in Section~\ref{sec:eval-smatch} show this concretely.
 
 \section{Formal Specification}
 \label{sec:sys-formal}
@@ -360,25 +359,50 @@ the number of LLM calls per turn is at most a small constant.
 \section{LLM Sub-Call Cost and Safety}
 \label{sec:sys-cost}
 
+\subsection{Injection Safety of Sub-Calls}
+
 Every LLM call adds latency and cost.
 We minimise both by restricting LLM calls to the single-concept classification step
 in the synonym and antonym detection paths.
-The call takes two words as input (the base concepts of the policy predicate and the
-tool output predicate) and returns a three-way classification with a confidence score.
-No other context is provided to the model.
+The call takes two base concept words as input (one from the policy predicate, one from
+the tool output predicate) and returns a three-way classification with a confidence
+score.
+No surrounding text, no tool output context, and no policy prose is provided.
 
-This design has a security property.
-An attacker who controls the content of a tool output also controls some of the words
-that reach the classifier.
-However, they control only one word of the two-word input: the tool output predicate.
-The other word is the policy predicate, which is fixed by the system administrator.
-A single word is not sufficient to mount a prompt injection against a classifier that
-accepts exactly two words and returns a structured enum.
+This design is unlikely to be susceptible to prompt injection.
+An attacker who controls the content of a tool output controls, at most, one of the
+two words passed to the classifier: the tool output predicate extracted by the AMR
+parser.
+The other word is the policy predicate, which is fixed by the system administrator and
+never touches untrusted data.
+A single concept word is not a viable attack surface against a model that accepts
+exactly two words and returns a structured enum.
 
-This is in contrast to LLM-judge defenses, where the entire adversarial text is passed
-to the judge.
-The attacker has full control over the judge's input and can craft text that manipulates
-the judge's reasoning.
+This is in direct contrast to LLM-judge defenses, where the entire adversarial text is
+passed to the judge, giving the attacker full control over the judge's input and the
+ability to craft text that manipulates its reasoning~\cite{shi2024judgedeceiver}.
+
+\subsection{The AMR Parser as a Security Boundary}
+
+The AMR parser (GPT-4o) takes raw tool output text and produces a syntactically valid
+AMR graph.
+When \texttt{AMR\_REPLACE\_OUTPUTS} is enabled, the agent's LLM sees only this AMR
+graph, not the original text.
+This means that arbitrary text embedded in tool outputs, including injected natural
+language instructions, must survive the AMR transformation to reach the agent.
+AMR only preserves predicates, arguments, polarity, and a small set of propositional
+operators.
+Free-form prose, authority-spoofing phrases, and urgency framing are discarded.
+
+This makes the AMR parser a partial security boundary between the untrusted tool
+output and the agent.
+However, the boundary has limits.
+The parser is itself a language model and does not provide formal guarantees.
+A sufficiently well-formed injection phrase may parse into AMR that represents a
+forbidden action, which is precisely what the firewall is designed to detect.
+Conversely, a parser error or unusual input phrasing may produce AMR that does not
+represent the injection faithfully, causing a detection miss.
+We treat the parser as a best-effort semantic filter, not a trusted base.
 
 In practice, the number of LLM calls per turn is bounded by
 $|\text{policy predicates}| \times |\text{output predicates with compatible args}|$.

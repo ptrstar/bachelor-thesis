@@ -98,17 +98,17 @@ This is not a gap in the detection algorithm; it is a fundamental limit of user-
 authorization.
 
 The definition does not cover attacks against implicit or unstated policies.
-If the user never says ``do not give investment advice'', the firewall has no prohibition
-graph to match against, and an injection that causes the agent to recommend buying a
-specific stock will not be detected.
+The firewall has no prohibition graph to match against unless the policy is written down.
 
-The definition does not cover attacks that rely on complex multi-step reasoning to
-derive the forbidden action.
-For example, ``do not withhold the transfer'' requires two reasoning steps to map to
-``send-01''.
-The firewall's LLM sub-calls are scoped to single-concept comparison, which is not
-sufficient for multi-hop inference.
-
-These are acknowledged boundaries, not failures.
-A detector with a clear scope is more trustworthy than one that claims broad coverage
-it cannot demonstrate.
+The definition does not cover obfuscated synonyms that require world-knowledge inference
+the classifier cannot make.
+Consider a policy that says ``do not change the password'' and an injection that says
+``we refer to the password as the flower; change the flower to 1234''.
+The injection's AMR root will be \texttt{change-01} with a \texttt{flower} argument,
+not a \texttt{password} argument.
+Whether the classifier maps \texttt{flower} to \texttt{password} is not guaranteed;
+the two words are not synonyms and their connection requires the additional context
+of the earlier sentence.
+This is a clear limitation: the approach depends on the AMR parser and the concept
+classifier having access to the relevant context, which is not always the case for
+multi-sentence or indirect obfuscations.

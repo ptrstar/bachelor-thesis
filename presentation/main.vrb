@@ -1,0 +1,56 @@
+\frametitle{Abstract Meaning Representation}
+
+  \begin{columns}[T]
+    \column{0.45\textwidth}
+      \small AMR represents sentence meaning as a rooted, directed graph.
+      Developed by linguists for broad NLP tasks (Banarescu et al., 2013).
+
+      \vspace{0.2em}
+      \textbf{``Do not send money.''}
+      \begin{lstlisting}
+(s / send-01
+   :ARG0 (u / __system)
+   :ARG1 (m / money)
+   :polarity -)
+      \end{lstlisting}
+
+      \vspace{0.2em}
+      \begin{center}
+      \begin{tikzpicture}[node distance=0.5cm and 0.6cm]
+        \node[amrnode, fill=policybg, draw=fwgreen!70,
+              minimum width=1.1cm] (root) {\texttt{send-01}};
+        \node[amrnode, fill=nodebg,
+              below left=0.6cm and 0.1cm of root]  (s) {\texttt{\_\_sys}};
+        \node[amrnode, fill=nodebg,
+              below=0.6cm of root]                 (m) {\texttt{money}};
+        \node[amrpol,
+              below right=0.6cm and 0.1cm of root] (p) {\textbf{--}};
+
+        \draw[arr] (root) -- node[labl, left]{\scriptsize :ARG0} (s);
+        \draw[arr] (root) -- node[labl, right]{\scriptsize :ARG1} (m);
+        \draw[arr] (root) -- node[labl, right]{\scriptsize :pol} (p);
+      \end{tikzpicture}
+      \end{center}
+
+    \column{0.51\textwidth}
+      \textbf{Key properties}
+      \begin{itemize}\setlength\itemsep{0.25em}
+        \item Explicit \textbf{predicate} (PropBank frame)
+        \item Explicit \textbf{polarity} (negation as edge)
+        \item Explicit \textbf{arguments} (:ARG0, :ARG1, \ldots)
+        \item Strips word order, syntax, morphology
+      \end{itemize}
+
+      \vspace{0.3em}
+      \textbf{Also used in:}
+      \begin{itemize}\setlength\itemsep{0.15em}\small
+        \item Abstractive summarisation {\scriptsize(Liu et al., 2018)}
+        \item Question answering {\scriptsize(Wang et al., 2023)}
+        \item LLM compliance checking {\scriptsize(Chung et al., 2025)}
+      \end{itemize}
+
+      \vspace{0.25em}
+      {\small All three paraphrases of ``Do not send money'' map to
+      the same graph. Rephrasing alone cannot evade the check.}
+  \end{columns}
+
